@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ELS Display — Варианты раскладки 480×272</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #060608;
+    color: #fff;
+    padding: 24px;
+}
+h1 {
+    text-align:center; font-size:28px; margin-bottom:6px;
+    background: linear-gradient(90deg,#00d4ff,#00ff88);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.subtitle { text-align:center; color:#557; font-size:14px; margin-bottom:32px; }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+    gap: 36px;
+    max-width: 1700px;
+    margin: 0 auto;
+}
+
+.card {
+    background: #12121a;
+    border: 1px solid #1e2030;
+    border-radius: 12px;
+    padding: 18px;
+}
+.card:hover { border-color: #00d4ff44; }
+.card-title {
+    font-size:14px; font-weight:bold; color:#8899aa;
+    margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;
+}
+.card-num {
+    background: linear-gradient(135deg,#00d4ff,#00ff88);
+    color:#000; font-weight:bold; font-size:12px;
+    padding:3px 10px; border-radius:20px;
+}
+.card-mode { color:#ffaa44; font-size:12px; }
+
+/* ===== COMMON SCREEN WRAPPER ===== */
+.screen {
+    width: 480px; height: 272px;
+    background: #0d0d15;
+    position: relative; overflow: hidden;
+    border: 1px solid #1a2030;
+    border-radius: 4px;
+    /* Scale down to 480×272 for viewing */
+    transform-origin: top left;
+}
+
+/* ===== STATUSBAR (common top strip, h=28) ===== */
+.sb {
+    position:absolute; top:0; left:0; right:0; height:28px;
+    background:#0a0e18; border-bottom:1px solid #00d4ff33;
+    display:flex; align-items:center; padding:0 8px;
+    font-size:11px; color:#6a9fb5;
+    gap:12px;
+}
+.sb .mode { color:#00d4ff; font-weight:bold; font-size:12px; }
+.sb .sub  { color:#ffaa44; }
+.sb .rpm  { color:#00ff88; margin-left:auto; }
+.sb .lims { display:flex; gap:3px; }
+.sb .lim-on  { color:#00d4ff; }
+.sb .lim-off { color:#1a3a4a; }
+
+/* ===== LIMIT ARROWS ===== */
+.lim-row { display:flex; gap:6px; align-items:center; }
+
+/* ===== PARAM CELL (reusable) ===== */
+.cell {
+    background:#080c14;
+    border-left:3px solid #00d4ff;
+    border-radius:3px;
+    padding:5px 8px;
+    display:flex; flex-direction:column; justify-content:center;
+}
+.cell.editable { border-left-color:#ffaa44; }
+.cell.positive { border-left-color:#00ff88; }
+.cell.negative { border-left-color:#ff5555; }
+.cell.readonly { border-left-color:#6a9fb5; }
+
+.lbl { font-size:11px; color:#6a9fb5; white-space:nowrap; margin-bottom:1px; }
+.lbl.ed { color:#ffaa44; }
+.val { font-size:20px; font-weight:bold; color:#e0e0e0; white-space:nowrap; line-height:1.1; }
+.val.cyan { color:#00d4ff; }
+.val.green { color:#00ff88; }
+.val.red   { color:#ff5555; }
+.val.orange { color:#ffaa44; }
+.val.sm  { font-size:16px; }
+.val.xs  { font-size:13px; }
+.val.lg  { font-size:26px; }
+.val.xl  { font-size:32px; }
+.val.xxl { font-size:40px; }
+.unit { font-size:11px; color:#557; }
+
+/* ===== BUTTONS (common) ===== */
+.btn-strip {
+    display:flex; gap:5px; align-items:center;
+}
+.btn {
+    border-radius:4px; border:1px solid #2a5a7a;
+    background:#1a3a4a; color:#e0e0e0;
+    font-weight:bold; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+}
+.btn.ok {
+    background:#00d4ff; color:#000; border-color:#00d4ff;
+    font-size:13px;
+    box-shadow:0 0 8px #00d4ff66;
+}
+.btn.act { border-color:#ffaa44; color:#ffaa44; }
+
+/* ===== NM format ===== */
+.nm { white-space:nowrap; }
+.nm .cur { color:#ffcc00; }
+.nm .sep { color:#557; }
+.nm .tot { color:#00ff88; }
+
+/* ========================================================= */
+/* VARIANT A — "4 equal rows" + buttons                      */
+/* Like current but ALL rows same height, no "big hero"       */
+/* ========================================================= */
+.va {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; padding:6px; gap:5px;
+}
+.va .row4 { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.va .btn-row { margin-top:auto; }
+
+/* ========================================================= */
+/* VARIANT B — "Left 2 rows + Right 2×2 grid"                */
+/* ========================================================= */
+.vb {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:grid; grid-template-columns:160px 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:5px; padding:6px;
+}
+.vb .btns { grid-column:1/-1; display:flex; gap:5px; align-items:center; height:36px; }
+
+/* ========================================================= */
+/* VARIANT C — "3-column equal grid"                         */
+/* ========================================================= */
+.vc {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; gap:5px; padding:6px;
+}
+.vc .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; flex:1; }
+.vc .btns { display:flex; gap:5px; height:36px; }
+
+/* ========================================================= */
+/* VARIANT D — "2 top wide + 3 bottom + buttons"             */
+/* ========================================================= */
+.vd {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; gap:5px; padding:6px;
+}
+.vd .top2 { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.vd .mid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; }
+.vd .btns { margin-top:auto; display:flex; gap:5px; height:36px; }
+
+/* ========================================================= */
+/* VARIANT E — "4×2 full grid + buttons strip"               */
+/* ========================================================= */
+.ve {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; gap:5px; padding:6px;
+}
+.ve .grid4x2 { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr 1fr 1fr; gap:5px; flex:1; }
+.ve .btns { display:flex; gap:5px; height:36px; }
+
+/* ========================================================= */
+/* VARIANT F — "Horizontal rows list"                        */
+/* ========================================================= */
+.vf {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; padding:6px; gap:4px;
+}
+.vf .hrow {
+    display:flex; align-items:center;
+    background:#080c14; border-left:3px solid #00d4ff;
+    border-radius:3px; padding:0 10px;
+    flex:1;
+}
+.vf .hrow .lbl { width:100px; font-size:11px; color:#6a9fb5; }
+.vf .hrow .val { font-size:20px; font-weight:bold; color:#e0e0e0; flex:1; }
+.vf .hrow.ed  { border-left-color:#ffaa44; }
+.vf .hrow.ed .lbl { color:#ffaa44; }
+.vf .btns { display:flex; gap:5px; height:36px; flex-shrink:0; }
+
+/* ========================================================= */
+/* VARIANT G — "Big left value + 3 right rows"               */
+/* hero value medium size (not giant), right column 3 rows    */
+/* ========================================================= */
+.vg {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:grid; grid-template-columns:220px 1fr;
+    gap:6px; padding:6px;
+}
+.vg .left { display:flex; flex-direction:column; gap:5px; }
+.vg .left .hero {
+    flex:1; background:#080c14;
+    border:1px solid #00d4ff33; border-left:3px solid #00d4ff;
+    border-radius:4px; padding:8px 10px;
+    display:flex; flex-direction:column; justify-content:center;
+}
+.vg .right { display:flex; flex-direction:column; gap:5px; }
+.vg .btns { display:flex; gap:5px; height:36px; }
+
+/* ========================================================= */
+/* VARIANT H — "4 rows equal full width"                     */
+/* No left/right split, just 4 horizontal rows + buttons      */
+/* ========================================================= */
+.vh {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; padding:6px; gap:5px;
+}
+.vh .cell2 {
+    flex:1; background:#080c14;
+    border-left:4px solid #00d4ff;
+    border-radius:3px; padding:0 12px;
+    display:flex; align-items:center;
+    gap:16px;
+}
+.vh .cell2.ed { border-left-color:#ffaa44; }
+.vh .cell2 .lbl { font-size:12px; color:#6a9fb5; width:110px; flex-shrink:0; }
+.vh .cell2.ed .lbl { color:#ffaa44; }
+.vh .cell2 .val { font-size:24px; font-weight:bold; color:#e0e0e0; }
+.vh .cell2 .val.green { color:#00ff88; }
+.vh .cell2 .val.red   { color:#ff5555; }
+.vh .cell2 .val.cyan  { color:#00d4ff; }
+.vh .cell2 .val.orange { color:#ffaa44; }
+.vh .btns { display:flex; gap:5px; height:36px; flex-shrink:0; }
+
+/* ========================================================= */
+/* VARIANT I — "3+3 symmetric grid (M7 style)"               */
+/* ========================================================= */
+.vi {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; padding:6px; gap:5px;
+}
+.vi .g2x3 { display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr; gap:5px; flex:1; }
+.vi .btns { display:flex; gap:5px; height:36px; flex-shrink:0; }
+
+/* ========================================================= */
+/* VARIANT J — "Compact 2-column list"                       */
+/* label | val | label | val in 2 columns                     */
+/* ========================================================= */
+.vj {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; padding:6px; gap:4px;
+}
+.vj .jgrid { display:grid; grid-template-columns:1fr 1fr; gap:4px; flex:1; }
+.vj .jcell {
+    display:flex; flex-direction:column; justify-content:center;
+    background:#080c14; border-left:3px solid #6a9fb5;
+    border-radius:3px; padding:5px 10px;
+}
+.vj .jcell.ed { border-left-color:#ffaa44; }
+.vj .jcell.cyn { border-left-color:#00d4ff; }
+.vj .jcell .lbl { font-size:10px; color:#6a9fb5; }
+.vj .jcell.ed .lbl { color:#ffaa44; }
+.vj .jcell .val { font-size:20px; font-weight:bold; color:#e0e0e0; }
+.vj .btns { display:flex; gap:5px; height:36px; flex-shrink:0; }
+
+/* ========================================================= */
+/* VARIANT K — "Mini dashboard: 1+5 layout"                  */
+/* One featured param top, 5 equal below + buttons right      */
+/* ========================================================= */
+.vk {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:grid; grid-template-columns:1fr 60px;
+    gap:5px; padding:6px;
+}
+.vk .main-area { display:flex; flex-direction:column; gap:5px; }
+.vk .featured {
+    background:#080c14; border:1px solid #00d4ff44;
+    border-left:4px solid #00d4ff; border-radius:4px;
+    padding:6px 10px; display:flex; align-items:center; gap:12px;
+    height:56px; flex-shrink:0;
+}
+.vk .mini5 { display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr; gap:5px; flex:1; }
+.vk .mcell { background:#080c14; border-left:3px solid #6a9fb5; border-radius:3px; padding:4px 7px; display:flex; flex-direction:column; justify-content:center; }
+.vk .mcell.ed { border-left-color:#ffaa44; }
+.vk .btns-vert { display:flex; flex-direction:column; gap:5px; }
+.vk .btns-vert .btn { flex:1; width:54px; }
+.vk .btns-vert .btn.ok { flex:1.5; }
+
+/* ========================================================= */
+/* VARIANT L — "Statusbar + 2 wide + 4 small + buttons"      */
+/* ========================================================= */
+.vl {
+    position:absolute; top:28px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; padding:6px; gap:4px;
+}
+.vl .top2 { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.vl .bot4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:4px; }
+.vl .cell { padding:5px 8px; }
+.vl .btns { display:flex; gap:5px; height:34px; flex-shrink:0; margin-top:auto; }
+
+</style>
+</head>
+<body>
+
+<h1>ELS Display — Варианты раскладки</h1>
+<div class="subtitle">480×272 · текущие цвета · все параметры одного размера · 12 вариантов компоновки</div>
+
+<div class="grid">
+
+<!-- ============================================================ -->
+<!-- VARIANT A1 — 4 equal rows, M1 ПОДАЧА                        -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">A1</span> &nbsp; 4 равные строки · узкий вариант</div>
+    <div class="card-mode">M1 ПОДАЧА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M1 — ПОДАЧА</span>
+        <span class="sub">S2 РУЧНАЯ</span>
+        <span>← → ↑ ↓</span>
+        <span class="rpm">↻ 1240</span>
+    </div>
+    <div class="va">
+        <div class="cell">
+            <div class="lbl">ПОЗИЦИЯ Z</div>
+            <div class="val green">+125.45</div>
+        </div>
+        <div class="cell negative">
+            <div class="lbl">ПОЗИЦИЯ X</div>
+            <div class="val red">−42.78</div>
+        </div>
+        <div class="cell editable">
+            <div class="lbl ed">СЪЁМ</div>
+            <div class="val orange">0.25 мм</div>
+        </div>
+        <div class="cell row4">
+            <div class="cell readonly" style="flex:1">
+                <div class="lbl">ПРОХОДЫ</div>
+                <div class="val nm"><span class="cur">3</span><span class="sep">/</span><span class="tot">8</span></div>
+            </div>
+            <div class="cell readonly" style="flex:1">
+                <div class="lbl">ПОДАЧА</div>
+                <div class="val cyan">0.50</div>
+            </div>
+        </div>
+        <div class="btn-row btn-strip" style="margin-top:4px;">
+            <div class="btn" style="flex:1;height:32px;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;height:32px;">OK</div>
+            <div class="btn" style="flex:1;height:32px;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT A2 — 4 equal rows, M3 РЕЗЬБА                        -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">A2</span> &nbsp; 4 равные строки</div>
+    <div class="card-mode">M3 РЕЗЬБА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M3 — РЕЗЬБА</span>
+        <span class="sub">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-off">←</span><span class="lim-on">→</span><span class="lim-off">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 800</span>
+    </div>
+    <div class="va">
+        <div class="cell positive">
+            <div class="lbl">ПОЗИЦИЯ Z</div>
+            <div class="val green">+123.45</div>
+        </div>
+        <div class="cell negative">
+            <div class="lbl">ПОЗИЦИЯ X</div>
+            <div class="val red">−67.89</div>
+        </div>
+        <div class="cell">
+            <div class="lbl">ШАГ РЕЗЬБЫ</div>
+            <div class="val cyan">1.50 мм &nbsp;<span style="font-size:13px;color:#6a9fb5;">МЕТРИЧ</span></div>
+        </div>
+        <div class="cell row4">
+            <div class="cell readonly" style="flex:1">
+                <div class="lbl">ЦИКЛОВ</div>
+                <div class="val nm"><span class="cur">2</span><span class="sep">/</span><span class="tot">12</span></div>
+            </div>
+            <div class="cell readonly" style="flex:1">
+                <div class="lbl">ОБ/МИН</div>
+                <div class="val cyan">800</div>
+            </div>
+        </div>
+        <div class="btn-strip" style="margin-top:4px;">
+            <div class="btn" style="flex:1;height:32px;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;height:32px;">OK</div>
+            <div class="btn" style="flex:1;height:32px;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT B — Left 2 big + Right 2×2 grid, M4 КОНУС           -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">B</span> &nbsp; Левые 2 большие + правая 2×2 сетка</div>
+    <div class="card-mode">M4 КОНУС ВНЕШН</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M4 — КОНУС ВНЕШН</span>
+        <span class="sub">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lim-on">←</span><span class="lim-off">→</span><span class="lim-off">↑</span><span class="lim-on">↓</span></span>
+        <span class="rpm">↻ 980</span>
+    </div>
+    <div style="position:absolute;top:28px;bottom:0;left:0;right:0;display:grid;grid-template-columns:200px 1fr;grid-template-rows:1fr 1fr 36px;gap:5px;padding:6px;">
+        <div class="cell positive" style="display:flex;flex-direction:column;justify-content:center;">
+            <div class="lbl">ПОЗИЦИЯ Z</div>
+            <div class="val green lg">+125.45</div>
+        </div>
+        <div class="cell editable" style="display:flex;flex-direction:column;justify-content:center;">
+            <div class="lbl ed">КОНУС</div>
+            <div class="val orange lg">5.0°</div>
+            <div class="unit">НАРУЖНЫЙ</div>
+        </div>
+        <div class="cell negative" style="display:flex;flex-direction:column;justify-content:center;">
+            <div class="lbl">ПОЗИЦИЯ X</div>
+            <div class="val red lg">−42.78</div>
+        </div>
+        <div style="display:grid;grid-template-rows:1fr 1fr;gap:5px;">
+            <div class="cell readonly">
+                <div class="lbl">ПОДАЧА</div>
+                <div class="val cyan">0.50 мм/об</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ПРОХОДЫ</div>
+                <div class="val nm"><span class="cur">3</span><span class="sep">/</span><span class="tot">8</span></div>
+            </div>
+        </div>
+        <div class="btn-strip" style="grid-column:1/-1;">
+            <div class="btn" style="flex:1;height:32px;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;height:32px;">OK</div>
+            <div class="btn" style="flex:1;height:32px;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT C — 3-column equal grid, M6 ШАР                     -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">C</span> &nbsp; 3-колоночная сетка · все равные</div>
+    <div class="card-mode">M6 ШАР</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M6 — ШАР</span>
+        <span class="sub">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lim-on">←</span><span class="lim-on">→</span><span class="lim-off">↑</span><span class="lim-on">↓</span></span>
+        <span class="rpm">↻ 320</span>
+    </div>
+    <div class="vc">
+        <div class="grid3">
+            <div class="cell positive">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="val green">+030.50</div>
+            </div>
+            <div class="cell negative">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="val red">−015.25</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">РАДИУС ШАР</div>
+                <div class="val cyan">25.00 мм</div>
+            </div>
+            <div class="cell editable">
+                <div class="lbl ed">НОЖКА ММ</div>
+                <div class="val orange">12.50</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ЗАХОДОВ</div>
+                <div class="val nm"><span class="cur">2</span><span class="sep">/</span><span class="tot">8</span></div>
+            </div>
+            <div class="cell readonly" style="border-left-color:#333;opacity:0.4;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT D — 2 top + 3 bottom + buttons, M7 ДЕЛИЛКА          -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">D</span> &nbsp; 2 широких + 3 узких + кнопки</div>
+    <div class="card-mode">M7 ДЕЛИЛКА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M7 — ДЕЛИЛКА</span>
+        <span class="sub">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-off">←</span><span class="lim-off">→</span><span class="lim-on">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 0</span>
+    </div>
+    <div class="vd">
+        <div class="top2">
+            <div class="cell editable">
+                <div class="lbl ed">ДЕЛЕНИЙ</div>
+                <div class="val orange lg">24</div>
+            </div>
+            <div class="cell editable">
+                <div class="lbl ed">МЕТКА</div>
+                <div class="val orange lg nm"><span class="cur" style="color:#ffaa44;">5</span><span class="sep">/</span><span class="tot" style="color:#ffcc44;">24</span></div>
+            </div>
+        </div>
+        <div class="mid3">
+            <div class="cell readonly">
+                <div class="lbl">УГОЛ°</div>
+                <div class="val cyan">15.000°</div>
+            </div>
+            <div class="cell readonly" style="border-left-color:#333;opacity:0.35;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+            <div class="cell readonly" style="border-left-color:#333;opacity:0.35;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT E — 4×2 full grid, M3 РЕЗЬБА                        -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">E</span> &nbsp; 4 строки × 2 колонки</div>
+    <div class="card-mode">M3 РЕЗЬБА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M3 — РЕЗЬБА</span>
+        <span class="sub">S3 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-off">←</span><span class="lim-on">→</span><span class="lim-off">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 800</span>
+    </div>
+    <div class="ve">
+        <div class="grid4x2">
+            <div class="cell positive">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="val green">+123.45</div>
+            </div>
+            <div class="cell negative">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="val red">−067.89</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ШАГ РЕЗЬБЫ</div>
+                <div class="val cyan">1.50 мм</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ТИП</div>
+                <div class="val xs" style="color:#e0e0e0;font-size:15px;">МЕТРИЧ</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ЦИКЛОВ</div>
+                <div class="val nm"><span class="cur">2</span><span class="sep">/</span><span class="tot">12</span></div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ЗАХОДОВ Ph</div>
+                <div class="val cyan">1</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ОБ/МИН макс</div>
+                <div class="val cyan">800</div>
+            </div>
+            <div class="cell readonly">
+                <div class="lbl">ХОД</div>
+                <div class="val cyan">1.50 мм</div>
+            </div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT F — Horizontal rows, M2 ПОДАЧА АВТО                 -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">F</span> &nbsp; Горизонтальные строки — метка+значение</div>
+    <div class="card-mode">M2 ПОДАЧА АВТО</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M2 — aFEED</span>
+        <span class="sub">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-on">←</span><span class="lim-off">→</span><span class="lim-off">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 1450</span>
+    </div>
+    <div class="vf">
+        <div class="hrow">
+            <div class="lbl">ПОЗИЦИЯ Z</div>
+            <div class="val green">+125.45 мм</div>
+        </div>
+        <div class="hrow" style="border-left-color:#ff5555;">
+            <div class="lbl">ПОЗИЦИЯ X</div>
+            <div class="val red">−042.78 мм</div>
+        </div>
+        <div class="hrow ed">
+            <div class="lbl" style="color:#ffaa44;">СЪЁМ</div>
+            <div class="val orange">0.25 мм</div>
+        </div>
+        <div class="hrow" style="border-left-color:#6a9fb5;">
+            <div class="lbl">ПОДАЧА АВТО</div>
+            <div class="val cyan">125 мм/мин</div>
+        </div>
+        <div class="hrow" style="border-left-color:#6a9fb5;">
+            <div class="lbl">ПРОХОДЫ</div>
+            <div class="val nm"><span class="cur">3</span><span class="sep"> / </span><span class="tot">8</span></div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT G — Hero val medium + 3 right rows, M5 КОНУС ВНУТР  -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">G</span> &nbsp; Средний герой + 3 строки справа</div>
+    <div class="card-mode">M5 КОНУС ВНУТР</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M5 — КОНУС ВНУТР</span>
+        <span class="sub">S3 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-off">←</span><span class="lim-on">→</span><span class="lim-on">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 750</span>
+    </div>
+    <div class="vg">
+        <div class="left">
+            <div class="hero">
+                <div class="lbl ed" style="font-size:12px;margin-bottom:4px;">КОНУС (редакт.)</div>
+                <div class="val orange" style="font-size:40px;line-height:1;">5.0°</div>
+                <div class="unit" style="margin-top:4px;">ВНУТРЕННИЙ</div>
+            </div>
+            <div class="cell positive">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="val green">+125.45</div>
+            </div>
+            <div class="btn-strip" style="height:32px;">
+                <div class="btn" style="flex:1;font-size:16px;">▲</div>
+                <div class="btn ok" style="flex:1.2;">OK</div>
+                <div class="btn" style="flex:1;font-size:16px;">▼</div>
+            </div>
+        </div>
+        <div class="right">
+            <div class="cell negative" style="flex:1;">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="val red lg">−042.78</div>
+            </div>
+            <div class="cell readonly" style="flex:1;">
+                <div class="lbl">ПОДАЧА</div>
+                <div class="val cyan lg">0.50 мм</div>
+            </div>
+            <div class="cell readonly" style="flex:1;">
+                <div class="lbl">ПРОХОДЫ</div>
+                <div class="val nm lg"><span class="cur">3</span><span class="sep">/</span><span class="tot">8</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT H — 4 full-width horizontal rows, M1 ПОДАЧА         -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">H</span> &nbsp; 5 широких строк, метка + значение</div>
+    <div class="card-mode">M1 ПОДАЧА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M1 — ПОДАЧА</span>
+        <span class="sub">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-on">←</span><span class="lim-off">→</span><span class="lim-on">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 1240</span>
+    </div>
+    <div class="vh">
+        <div class="cell2">
+            <div class="lbl">ПОЗИЦИЯ Z</div>
+            <div class="val green">+125.45</div>
+            <div style="margin-left:auto;font-size:11px;color:#333;">мм</div>
+        </div>
+        <div class="cell2" style="border-left-color:#ff5555;">
+            <div class="lbl">ПОЗИЦИЯ X</div>
+            <div class="val red">−042.78</div>
+            <div style="margin-left:auto;font-size:11px;color:#333;">мм</div>
+        </div>
+        <div class="cell2 ed">
+            <div class="lbl" style="color:#ffaa44;">СЪЁМ</div>
+            <div class="val orange">0.25</div>
+            <div style="margin-left:auto;font-size:11px;color:#ffaa4466;">мм</div>
+        </div>
+        <div class="cell2" style="border-left-color:#6a9fb5;">
+            <div class="lbl">ПОДАЧА</div>
+            <div class="val cyan">0.50</div>
+            <div style="margin-left:auto;font-size:11px;color:#333;">мм/об</div>
+        </div>
+        <div class="cell2" style="border-left-color:#6a9fb5;">
+            <div class="lbl">ПРОХОДЫ</div>
+            <div class="val nm"><span class="cur">3</span><span class="sep"> / </span><span class="tot">8</span></div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT I — 3×2 symmetric grid, M7 ДЕЛИЛКА                  -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">I</span> &nbsp; 3×2 симметричная сетка</div>
+    <div class="card-mode">M7 ДЕЛИЛКА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M7 — ДЕЛИЛКА</span>
+        <span class="sub">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="lim-off">←</span><span class="lim-off">→</span><span class="lim-off">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 0</span>
+    </div>
+    <div class="vi">
+        <div class="g2x3">
+            <div class="cell editable" style="display:flex;flex-direction:column;justify-content:center;">
+                <div class="lbl ed">ДЕЛЕНИЙ</div>
+                <div class="val orange xl">24</div>
+            </div>
+            <div class="cell editable" style="display:flex;flex-direction:column;justify-content:center;">
+                <div class="lbl ed">МЕТКА</div>
+                <div class="val orange xl nm"><span style="color:#ffaa44;">5</span><span class="sep">/</span><span style="color:#ffcc44;">24</span></div>
+            </div>
+            <div class="cell readonly" style="display:flex;flex-direction:column;justify-content:center;">
+                <div class="lbl">УГОЛ°</div>
+                <div class="val cyan xl">15.000</div>
+                <div class="unit">градусов</div>
+            </div>
+            <div class="cell readonly" style="display:flex;flex-direction:column;justify-content:center;opacity:0.3;border-left-color:#333;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+            <div class="cell readonly" style="display:flex;flex-direction:column;justify-content:center;opacity:0.3;border-left-color:#333;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+            <div class="cell readonly" style="display:flex;flex-direction:column;justify-content:center;opacity:0.3;border-left-color:#333;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT J — 2-column compact list, M6 ШАР                   -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">J</span> &nbsp; 2 колонки × 3 строки (равные ячейки)</div>
+    <div class="card-mode">M6 ШАР</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M6 — ШАР</span>
+        <span class="sub">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lim-on">←</span><span class="lim-on">→</span><span class="lim-off">↑</span><span class="lim-on">↓</span></span>
+        <span class="rpm">↻ 320</span>
+    </div>
+    <div class="vj">
+        <div class="jgrid">
+            <div class="jcell cyn">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="val green">+030.50</div>
+            </div>
+            <div class="jcell" style="border-left-color:#ff5555;">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="val red">−015.25</div>
+            </div>
+            <div class="jcell ed">
+                <div class="lbl">НОЖКА ММ</div>
+                <div class="val orange">12.50</div>
+            </div>
+            <div class="jcell">
+                <div class="lbl">РАДИУС ШАР</div>
+                <div class="val cyan">25.00</div>
+            </div>
+            <div class="jcell">
+                <div class="lbl">ЗАХОДОВ</div>
+                <div class="val nm"><span class="cur">2</span><span class="sep">/</span><span class="tot">8</span></div>
+            </div>
+            <div class="jcell" style="border-left-color:#333;opacity:0.3;">
+                <div class="lbl">—</div>
+                <div class="val xs">—</div>
+            </div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT K — Вертикальные кнопки справа, M4 КОНУС            -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">K</span> &nbsp; Кнопки справа (вертикально) + сетка</div>
+    <div class="card-mode">M4 КОНУС ВНЕШН</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M4 — КОНУС ВНЕШН</span>
+        <span class="sub">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lim-on">←</span><span class="lim-off">→</span><span class="lim-off">↑</span><span class="lim-on">↓</span></span>
+        <span class="rpm">↻ 980</span>
+    </div>
+    <div class="vk">
+        <div class="main-area">
+            <div class="featured">
+                <div style="flex:1;">
+                    <div class="lbl ed" style="font-size:10px;">КОНУС (редакт.)</div>
+                    <div class="val orange" style="font-size:34px;line-height:1.1;">5.0°</div>
+                </div>
+                <div style="text-align:right;">
+                    <div class="lbl" style="font-size:10px;">ПОДАЧА</div>
+                    <div class="val cyan" style="font-size:18px;">0.50 мм/об</div>
+                </div>
+            </div>
+            <div class="mini5">
+                <div class="mcell">
+                    <div class="lbl" style="font-size:9px;">ПОЗИЦИЯ Z</div>
+                    <div class="val green" style="font-size:16px;">+125.45</div>
+                </div>
+                <div class="mcell" style="border-left-color:#ff5555;">
+                    <div class="lbl" style="font-size:9px;">ПОЗИЦИЯ X</div>
+                    <div class="val red" style="font-size:16px;">−042.78</div>
+                </div>
+                <div class="mcell">
+                    <div class="lbl" style="font-size:9px;">ПРОХОДЫ</div>
+                    <div class="val nm" style="font-size:16px;"><span class="cur">3</span><span class="sep">/</span><span class="tot">8</span></div>
+                </div>
+                <div class="mcell" style="border-left-color:#333;opacity:0.3;">
+                    <div class="lbl" style="font-size:9px;">—</div>
+                    <div style="font-size:14px;color:#333;">—</div>
+                </div>
+                <div class="mcell" style="border-left-color:#333;opacity:0.3;">
+                    <div class="lbl" style="font-size:9px;">—</div>
+                    <div style="font-size:14px;color:#333;">—</div>
+                </div>
+                <div class="mcell" style="border-left-color:#333;opacity:0.3;">
+                    <div class="lbl" style="font-size:9px;">—</div>
+                    <div style="font-size:14px;color:#333;">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="btns-vert">
+            <div class="btn" style="font-size:18px;border-radius:6px;">▲</div>
+            <div class="btn ok" style="font-size:13px;border-radius:6px;">OK</div>
+            <div class="btn" style="font-size:18px;border-radius:6px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT L — 2 wide + 4 small + buttons, M3 РЕЗЬБА           -->
+<!-- ============================================================ -->
+<div class="card">
+<div class="card-title">
+    <div><span class="card-num">L</span> &nbsp; 2 широких + 4 узких + кнопки</div>
+    <div class="card-mode">M3 РЕЗЬБА</div>
+</div>
+<div class="screen">
+    <div class="sb">
+        <span class="mode">M3 — РЕЗЬБА</span>
+        <span class="sub">S1 НАРУЖНАЯ · Ph=2</span>
+        <span class="lims"><span class="lim-off">←</span><span class="lim-on">→</span><span class="lim-off">↑</span><span class="lim-off">↓</span></span>
+        <span class="rpm">↻ 800</span>
+    </div>
+    <div class="vl">
+        <div class="top2">
+            <div class="cell positive" style="padding:6px 10px;">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="val green lg">+123.45</div>
+            </div>
+            <div class="cell negative" style="padding:6px 10px;">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="val red lg">−067.89</div>
+            </div>
+        </div>
+        <div class="bot4">
+            <div class="cell" style="padding:5px 8px;">
+                <div class="lbl">ШАГ</div>
+                <div class="val cyan">1.50мм</div>
+            </div>
+            <div class="cell readonly" style="padding:5px 8px;">
+                <div class="lbl">ЦИКЛОВ</div>
+                <div class="val nm"><span class="cur">2</span><span class="sep">/</span><span class="tot">12</span></div>
+            </div>
+            <div class="cell readonly" style="padding:5px 8px;">
+                <div class="lbl">ОБ/МИН</div>
+                <div class="val cyan">800</div>
+            </div>
+            <div class="cell readonly" style="padding:5px 8px;">
+                <div class="lbl">ХОД Ph×2</div>
+                <div class="val cyan">3.00мм</div>
+            </div>
+        </div>
+        <div class="btns">
+            <div class="btn" style="flex:1;font-size:16px;">▲</div>
+            <div class="btn ok" style="flex:1.2;">OK</div>
+            <div class="btn" style="flex:1;font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+</div><!-- /grid -->
+
+<div style="text-align:center;margin-top:40px;color:#334;font-size:13px;">
+    Экраны 480×272px · цвета как в прошивке · выбери понравившийся вариант
+</div>
+
+</body>
+</html>

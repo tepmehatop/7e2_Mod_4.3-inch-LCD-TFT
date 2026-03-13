@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ELS 480×272 — Варианты K и I</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+    padding: 28px;
+    color: #fff;
+}
+h1 {
+    text-align:center;
+    color:#00d4ff;
+    font-size:26px;
+    text-shadow:0 0 20px rgba(0,212,255,0.6);
+    margin-bottom:6px;
+}
+.page-sub {
+    text-align:center;
+    color:#4a6a7a;
+    font-size:13px;
+    margin-bottom:36px;
+}
+.section-title {
+    color:#00d4ff;
+    font-size:18px;
+    font-weight:bold;
+    letter-spacing:2px;
+    margin:32px 0 16px;
+    padding-bottom:8px;
+    border-bottom:1px solid #1a3a4a;
+    text-shadow:0 0 10px rgba(0,212,255,0.4);
+}
+
+.screens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+    gap: 30px;
+}
+
+.screen-wrap {
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+}
+.screen-label {
+    font-size:14px; color:#6a9fb5; text-align:center;
+    font-weight:bold; letter-spacing:1px;
+}
+.mode-tag {
+    color:#ffaa44; font-weight:bold;
+}
+
+/* ============================
+   ЭКРАН 480×272
+   ============================ */
+.screen {
+    width: 480px;
+    height: 272px;
+    background: #0a0a0a;
+    border-radius: 6px;
+    border: 2px solid #1a3a4a;
+    box-shadow: 0 6px 28px rgba(0,212,255,0.2);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* ============================
+   СТАТУСБАР (общий, 36px)
+   ============================ */
+.sb {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 36px;
+    background: linear-gradient(180deg, #1a4d6d 0%, #0d2a3d 100%);
+    border-bottom: 2px solid #00d4ff;
+    box-shadow: 0 2px 12px rgba(0,212,255,0.35);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 10px;
+    font-size: 12px;
+    color: #6a9fb5;
+}
+.sb .m  { color:#00d4ff; font-weight:700; font-size:14px; text-shadow:0 0 8px rgba(0,212,255,0.9); letter-spacing:0.5px; }
+.sb .s  { color:#ffaa44; font-size:12px; }
+.sb .r  { margin-left:auto; color:#00ff88; font-weight:bold; font-size:12px; text-shadow:0 0 6px rgba(0,255,136,0.6); }
+.sb .lims { display:flex; gap:4px; font-size:13px; }
+.sb .lon  { color:#00d4ff; text-shadow:0 0 6px rgba(0,212,255,0.9); }
+.sb .loff { color:#1a3a4a; }
+
+/* ============================
+   ОБЩИЕ ЯЧЕЙКИ ПАРАМЕТРОВ
+   ============================ */
+.cell {
+    background: rgba(0,212,255,0.06);
+    border-left: 3px solid #00d4ff;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 10px;
+    overflow: hidden;
+}
+.cell.ed  { background:rgba(255,170,68,0.06); border-left-color:#ffaa44; }
+.cell.pos { border-left-color:#00ff88; }
+.cell.neg { border-left-color:#ff5555; }
+.cell.dim { background:rgba(255,255,255,0.02); border-left-color:#1a3a4a; }
+
+.lbl {
+    font-size: 10px;
+    color: #6a9fb5;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+.lbl.ed { color:#ffaa44; }
+
+/* Value sizes */
+.v20 { font-size:20px; font-weight:700; line-height:1.1; }
+.v24 { font-size:24px; font-weight:700; line-height:1.1; }
+.v28 { font-size:28px; font-weight:700; line-height:1.1; }
+.v32 { font-size:32px; font-weight:700; line-height:1.1; }
+.v36 { font-size:36px; font-weight:700; line-height:1.1; }
+.v40 { font-size:40px; font-weight:700; line-height:1.0; }
+
+/* Value colors */
+.c-cyan   { color:#00d4ff; text-shadow:0 0 12px rgba(0,212,255,0.6); }
+.c-green  { color:#00ff88; text-shadow:0 0 10px rgba(0,255,136,0.5); }
+.c-red    { color:#ff5555; text-shadow:0 0 10px rgba(255,85,85,0.5); }
+.c-orange { color:#ffaa44; text-shadow:0 0 10px rgba(255,170,68,0.5); }
+.c-white  { color:#e0e0e0; }
+
+/* NM counter (current/total) */
+.nm-cur { color:#ffcc00; text-shadow:0 0 8px rgba(255,200,0,0.5); }
+.nm-sep { color:#2a4a5a; }
+.nm-tot { color:#00ff88; text-shadow:0 0 8px rgba(0,255,136,0.4); }
+
+/* ============================
+   КНОПКИ
+   ============================ */
+.btn {
+    background: linear-gradient(180deg, #2a4a5a 0%, #1a2a3a 100%);
+    border: 1px solid #3a6a8a;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.btn-ok {
+    background: linear-gradient(180deg, #00d4ff 0%, #0088aa 100%);
+    border-color: #00d4ff;
+    color: #000;
+    font-weight: 700;
+    box-shadow: 0 0 12px rgba(0,212,255,0.7);
+}
+
+/* ============================
+   LAYOUT K
+   Слева: featured (1 строка) + сетка 2×3
+   Справа: 3 вертикальные кнопки
+   ============================ */
+.lk {
+    position: absolute;
+    top: 38px; left: 0; right: 0; bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr 56px;
+    gap: 4px;
+    padding: 6px;
+}
+.lk-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.lk-featured {
+    /* top featured cell — немного выше чем мини-ячейки */
+    flex: 0 0 72px;
+    background: rgba(0,212,255,0.07);
+    border-left: 4px solid #00d4ff;
+    border-radius: 4px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.lk-featured.ed {
+    background: rgba(255,170,68,0.07);
+    border-left-color: #ffaa44;
+}
+.lk-feat-main { flex: 1; }
+.lk-feat-sub  { text-align:right; }
+.lk-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+}
+.lk-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.lk-btns .btn { flex: 1; font-size:18px; }
+.lk-btns .btn-ok { flex: 1.4; font-size:12px; }
+
+/* ============================
+   LAYOUT I
+   Сетка 3×2 + кнопки снизу
+   ============================ */
+.li {
+    position: absolute;
+    top: 38px; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+}
+.li-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+}
+.li-btns {
+    flex: 0 0 36px;
+    display: flex;
+    gap: 4px;
+}
+.li-btns .btn     { flex: 1; height: 36px; font-size:16px; }
+.li-btns .btn-ok  { flex: 1.4; height: 36px; font-size:12px; }
+
+</style>
+</head>
+<body>
+
+<h1>ELS Display 480×272 — Варианты K и I</h1>
+<div class="page-sub">Стиль Design #8 · цвета и шрифты как в прошивке · все параметры одного размера</div>
+
+<!-- ======================================================== -->
+<!-- LAYOUT K — Featured param + mini 2×3 grid + vert buttons -->
+<!-- ======================================================== -->
+
+<div class="section-title">ВАРИАНТ K — Главный параметр + сетка 2×3 + кнопки справа</div>
+<div class="screens-grid">
+
+<!-- K / M1 ПОДАЧА -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M1 ПОДАЧА</span> · СЪЁМ главный</div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M1 — ПОДАЧА</span>
+        <span class="s">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lon">←</span><span class="loff">→</span><span class="lon">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 1240</span>
+    </div>
+    <div class="lk">
+        <div class="lk-main">
+            <div class="lk-featured ed">
+                <div class="lk-feat-main">
+                    <div class="lbl ed">СЪЁМ (редакт.)</div>
+                    <div class="v36 c-orange">0.25 <span style="font-size:16px;color:#aa7030;">мм</span></div>
+                </div>
+                <div class="lk-feat-sub">
+                    <div class="lbl" style="text-align:right;">ПОДАЧА</div>
+                    <div class="v24 c-cyan">0.50 <span style="font-size:12px;color:#4a7a8a;">мм/об</span></div>
+                </div>
+            </div>
+            <div class="lk-grid">
+                <div class="cell pos">
+                    <div class="lbl">ПОЗИЦИЯ Z</div>
+                    <div class="v20 c-green">+125.45</div>
+                </div>
+                <div class="cell neg">
+                    <div class="lbl">ПОЗИЦИЯ X</div>
+                    <div class="v20 c-red">−042.78</div>
+                </div>
+                <div class="cell">
+                    <div class="lbl">ПРОХОДЫ</div>
+                    <div class="v20"><span class="nm-cur">3</span><span class="nm-sep">/</span><span class="nm-tot">8</span></div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20 c-white" style="opacity:0.2;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20 c-white" style="opacity:0.2;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20 c-white" style="opacity:0.2;">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="lk-btns">
+            <div class="btn">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- K / M3 РЕЗЬБА -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M3 РЕЗЬБА</span> · ШАГ главный</div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M3 — РЕЗЬБА</span>
+        <span class="s">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="loff">←</span><span class="lon">→</span><span class="loff">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 800</span>
+    </div>
+    <div class="lk">
+        <div class="lk-main">
+            <div class="lk-featured">
+                <div class="lk-feat-main">
+                    <div class="lbl">ШАГ РЕЗЬБЫ</div>
+                    <div class="v36 c-cyan">1.50 <span style="font-size:16px;color:#4a7a8a;">мм</span></div>
+                </div>
+                <div class="lk-feat-sub">
+                    <div class="lbl" style="text-align:right;">ТИП</div>
+                    <div class="v20 c-white">МЕТРИЧ</div>
+                    <div class="lbl" style="text-align:right;margin-top:3px;">ОБ/МИН</div>
+                    <div style="font-size:16px;font-weight:bold;" class="c-cyan">800</div>
+                </div>
+            </div>
+            <div class="lk-grid">
+                <div class="cell pos">
+                    <div class="lbl">ПОЗИЦИЯ Z</div>
+                    <div class="v20 c-green">+123.45</div>
+                </div>
+                <div class="cell neg">
+                    <div class="lbl">ПОЗИЦИЯ X</div>
+                    <div class="v20 c-red">−067.89</div>
+                </div>
+                <div class="cell">
+                    <div class="lbl">ЦИКЛОВ</div>
+                    <div class="v20"><span class="nm-cur">2</span><span class="nm-sep">/</span><span class="nm-tot">12</span></div>
+                </div>
+                <div class="cell">
+                    <div class="lbl">ЗАХОДОВ Ph</div>
+                    <div class="v20 c-cyan">1</div>
+                </div>
+                <div class="cell">
+                    <div class="lbl">ХОД</div>
+                    <div class="v20 c-cyan">1.50мм</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="lk-btns">
+            <div class="btn">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- K / M4 КОНУС ВНЕШН -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M4 КОНУС ВНЕШН</span> · КОНУС главный</div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M4 — КОНУС ВНЕШН</span>
+        <span class="s">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lon">←</span><span class="loff">→</span><span class="loff">↑</span><span class="lon">↓</span></span>
+        <span class="r">↻ 980</span>
+    </div>
+    <div class="lk">
+        <div class="lk-main">
+            <div class="lk-featured ed">
+                <div class="lk-feat-main">
+                    <div class="lbl ed">КОНУС (редакт.)</div>
+                    <div class="v36 c-orange">5.0<span style="font-size:20px;">°</span></div>
+                    <div style="font-size:10px;color:#8a6020;letter-spacing:1px;">ВНЕШНИЙ</div>
+                </div>
+                <div class="lk-feat-sub">
+                    <div class="lbl" style="text-align:right;">ПОДАЧА</div>
+                    <div class="v24 c-cyan">0.50</div>
+                    <div style="font-size:10px;color:#4a7a8a;text-align:right;">мм/об</div>
+                </div>
+            </div>
+            <div class="lk-grid">
+                <div class="cell pos">
+                    <div class="lbl">ПОЗИЦИЯ Z</div>
+                    <div class="v20 c-green">+125.45</div>
+                </div>
+                <div class="cell neg">
+                    <div class="lbl">ПОЗИЦИЯ X</div>
+                    <div class="v20 c-red">−042.78</div>
+                </div>
+                <div class="cell">
+                    <div class="lbl">ПРОХОДЫ</div>
+                    <div class="v20"><span class="nm-cur">3</span><span class="nm-sep">/</span><span class="nm-tot">8</span></div>
+                </div>
+                <div class="cell">
+                    <div class="lbl">СЪЁМ</div>
+                    <div class="v20 c-orange">0.25мм</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">К.РЕЗЬБА</div>
+                    <div class="v20 c-white" style="font-size:14px;opacity:0.5;">ВЫКЛ</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="lk-btns">
+            <div class="btn">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- K / M6 ШАР -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M6 ШАР</span> · РАДИУС главный</div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M6 — ШАР</span>
+        <span class="s">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lon">←</span><span class="lon">→</span><span class="loff">↑</span><span class="lon">↓</span></span>
+        <span class="r">↻ 320</span>
+    </div>
+    <div class="lk">
+        <div class="lk-main">
+            <div class="lk-featured">
+                <div class="lk-feat-main">
+                    <div class="lbl">РАДИУС ШАР</div>
+                    <div class="v36 c-cyan">25.00 <span style="font-size:16px;color:#4a7a8a;">мм</span></div>
+                </div>
+                <div class="lk-feat-sub">
+                    <div class="lbl" style="text-align:right;">ЗАХОДОВ</div>
+                    <div class="v24"><span class="nm-cur">2</span><span class="nm-sep">/</span><span class="nm-tot">8</span></div>
+                </div>
+            </div>
+            <div class="lk-grid">
+                <div class="cell pos">
+                    <div class="lbl">ПОЗИЦИЯ Z</div>
+                    <div class="v20 c-green">+030.50</div>
+                </div>
+                <div class="cell neg">
+                    <div class="lbl">ПОЗИЦИЯ X</div>
+                    <div class="v20 c-red">−015.25</div>
+                </div>
+                <div class="cell ed">
+                    <div class="lbl ed">НОЖКА ММ</div>
+                    <div class="v20 c-orange">12.50</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="lk-btns">
+            <div class="btn">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- K / M7 ДЕЛИЛКА -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M7 ДЕЛИЛКА</span> · ДЕЛЕНИЙ главный</div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M7 — ДЕЛИЛКА</span>
+        <span class="s">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="loff">←</span><span class="loff">→</span><span class="lon">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 0</span>
+    </div>
+    <div class="lk">
+        <div class="lk-main">
+            <div class="lk-featured ed">
+                <div class="lk-feat-main">
+                    <div class="lbl ed">ДЕЛЕНИЙ (редакт.)</div>
+                    <div class="v40 c-orange">24</div>
+                </div>
+                <div class="lk-feat-sub">
+                    <div class="lbl" style="text-align:right;">УГОЛ°</div>
+                    <div class="v24 c-cyan">15.000</div>
+                    <div style="font-size:10px;color:#4a7a8a;text-align:right;">градусов</div>
+                </div>
+            </div>
+            <div class="lk-grid">
+                <div class="cell ed">
+                    <div class="lbl ed">МЕТКА (ред.)</div>
+                    <div class="v20"><span class="nm-cur" style="color:#ffaa44;">5</span><span class="nm-sep">/</span><span class="nm-tot" style="color:#ffcc44;">24</span></div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+                <div class="cell dim">
+                    <div class="lbl">—</div>
+                    <div class="v20" style="opacity:0.15;">—</div>
+                </div>
+            </div>
+        </div>
+        <div class="lk-btns">
+            <div class="btn">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+</div><!-- /screens-grid K -->
+
+<!-- ======================================================== -->
+<!-- LAYOUT I — Symmetric 3×2 grid + buttons below           -->
+<!-- ======================================================== -->
+
+<div class="section-title">ВАРИАНТ I — Симметричная сетка 3×2 + кнопки снизу</div>
+<div class="screens-grid">
+
+<!-- I / M1 ПОДАЧА -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M1 ПОДАЧА</span></div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M1 — ПОДАЧА</span>
+        <span class="s">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lon">←</span><span class="loff">→</span><span class="lon">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 1240</span>
+    </div>
+    <div class="li">
+        <div class="li-grid">
+            <div class="cell pos">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="v28 c-green">+125.45</div>
+            </div>
+            <div class="cell neg">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="v28 c-red">−042.78</div>
+            </div>
+            <div class="cell ed">
+                <div class="lbl ed">СЪЁМ (ред.)</div>
+                <div class="v28 c-orange">0.25 мм</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ПОДАЧА</div>
+                <div class="v28 c-cyan">0.50 мм/об</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ПРОХОДЫ</div>
+                <div class="v28"><span class="nm-cur">3</span><span class="nm-sep">/</span><span class="nm-tot">8</span></div>
+            </div>
+            <div class="cell dim">
+                <div class="lbl">—</div>
+                <div class="v28" style="opacity:0.15;">—</div>
+            </div>
+        </div>
+        <div class="li-btns">
+            <div class="btn" style="font-size:16px;">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn" style="font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- I / M3 РЕЗЬБА -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M3 РЕЗЬБА</span></div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M3 — РЕЗЬБА</span>
+        <span class="s">S3 НАРУЖНАЯ · Ph=2</span>
+        <span class="lims"><span class="loff">←</span><span class="lon">→</span><span class="loff">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 800</span>
+    </div>
+    <div class="li">
+        <div class="li-grid">
+            <div class="cell pos">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="v28 c-green">+123.45</div>
+            </div>
+            <div class="cell neg">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="v28 c-red">−067.89</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ШАГ РЕЗЬБЫ</div>
+                <div class="v28 c-cyan">1.50 мм</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ЦИКЛОВ</div>
+                <div class="v28"><span class="nm-cur">2</span><span class="nm-sep">/</span><span class="nm-tot">12</span></div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ОБ/МИН макс</div>
+                <div class="v28 c-cyan">800</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ХОД Ph×2</div>
+                <div class="v28 c-cyan">3.00 мм</div>
+            </div>
+        </div>
+        <div class="li-btns">
+            <div class="btn" style="font-size:16px;">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn" style="font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- I / M5 КОНУС ВНУТР -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M5 КОНУС ВНУТР</span></div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M5 — КОНУС ВНУТР</span>
+        <span class="s">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="loff">←</span><span class="lon">→</span><span class="lon">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 750</span>
+    </div>
+    <div class="li">
+        <div class="li-grid">
+            <div class="cell pos">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="v28 c-green">+125.45</div>
+            </div>
+            <div class="cell neg">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="v28 c-red">−042.78</div>
+            </div>
+            <div class="cell ed">
+                <div class="lbl ed">КОНУС (ред.)</div>
+                <div class="v28 c-orange">5.0°</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ПОДАЧА</div>
+                <div class="v28 c-cyan">0.50 мм/об</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ПРОХОДЫ</div>
+                <div class="v28"><span class="nm-cur">3</span><span class="nm-sep">/</span><span class="nm-tot">8</span></div>
+            </div>
+            <div class="cell">
+                <div class="lbl">СЪЁМ</div>
+                <div class="v28 c-orange">0.25 мм</div>
+            </div>
+        </div>
+        <div class="li-btns">
+            <div class="btn" style="font-size:16px;">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn" style="font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- I / M6 ШАР -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M6 ШАР</span></div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M6 — ШАР</span>
+        <span class="s">S2 РУЧНАЯ</span>
+        <span class="lims"><span class="lon">←</span><span class="lon">→</span><span class="loff">↑</span><span class="lon">↓</span></span>
+        <span class="r">↻ 320</span>
+    </div>
+    <div class="li">
+        <div class="li-grid">
+            <div class="cell pos">
+                <div class="lbl">ПОЗИЦИЯ Z</div>
+                <div class="v28 c-green">+030.50</div>
+            </div>
+            <div class="cell neg">
+                <div class="lbl">ПОЗИЦИЯ X</div>
+                <div class="v28 c-red">−015.25</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">РАДИУС ШАР</div>
+                <div class="v28 c-cyan">25.00 мм</div>
+            </div>
+            <div class="cell ed">
+                <div class="lbl ed">НОЖКА ММ</div>
+                <div class="v28 c-orange">12.50</div>
+            </div>
+            <div class="cell">
+                <div class="lbl">ЗАХОДОВ</div>
+                <div class="v28"><span class="nm-cur">2</span><span class="nm-sep">/</span><span class="nm-tot">8</span></div>
+            </div>
+            <div class="cell dim">
+                <div class="lbl">—</div>
+                <div class="v28" style="opacity:0.15;">—</div>
+            </div>
+        </div>
+        <div class="li-btns">
+            <div class="btn" style="font-size:16px;">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn" style="font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- I / M7 ДЕЛИЛКА -->
+<div class="screen-wrap">
+<div class="screen-label"><span class="mode-tag">M7 ДЕЛИЛКА</span></div>
+<div class="screen">
+    <div class="sb">
+        <span class="m">M7 — ДЕЛИЛКА</span>
+        <span class="s">S1 НАРУЖНАЯ</span>
+        <span class="lims"><span class="loff">←</span><span class="loff">→</span><span class="loff">↑</span><span class="loff">↓</span></span>
+        <span class="r">↻ 0</span>
+    </div>
+    <div class="li">
+        <div class="li-grid">
+            <div class="cell ed">
+                <div class="lbl ed">ДЕЛЕНИЙ (ред.)</div>
+                <div class="v28 c-orange">24</div>
+            </div>
+            <div class="cell ed">
+                <div class="lbl ed">МЕТКА (ред.)</div>
+                <div class="v28"><span class="nm-cur" style="color:#ffaa44;">5</span><span class="nm-sep">/</span><span class="nm-tot" style="color:#ffcc44;">24</span></div>
+            </div>
+            <div class="cell">
+                <div class="lbl">УГОЛ°</div>
+                <div class="v28 c-cyan">15.000°</div>
+            </div>
+            <div class="cell dim">
+                <div class="lbl">—</div>
+                <div class="v28" style="opacity:0.15;">—</div>
+            </div>
+            <div class="cell dim">
+                <div class="lbl">—</div>
+                <div class="v28" style="opacity:0.15;">—</div>
+            </div>
+            <div class="cell dim">
+                <div class="lbl">—</div>
+                <div class="v28" style="opacity:0.15;">—</div>
+            </div>
+        </div>
+        <div class="li-btns">
+            <div class="btn" style="font-size:16px;">▲</div>
+            <div class="btn btn-ok">OK</div>
+            <div class="btn" style="font-size:16px;">▼</div>
+        </div>
+    </div>
+</div>
+</div>
+
+</div><!-- /screens-grid I -->
+
+<div style="text-align:center;margin-top:40px;color:#2a4a5a;font-size:13px;">
+    Стиль Design #8 · 480×272px · Tahoma Bold · скажи какой вариант и режим нравится — реализуем в прошивке
+</div>
+
+</body>
+</html>

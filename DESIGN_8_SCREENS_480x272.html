@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design #8 - Dark Theme Pro - 480x272 - 6 Screens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00d4ff;
+            font-size: 32px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .screens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .screen-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .screen-title {
+            margin-bottom: 10px;
+            color: #00d4ff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .screen {
+            width: 480px;
+            height: 272px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
+            border: 2px solid #1a3a4a;
+            position: relative;
+        }
+
+        /* === ОБЩИЕ СТИЛИ === */
+        .statusbar {
+            height: 36px;
+            background: linear-gradient(180deg, #1a4d6d 0%, #0d2a3d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            border-bottom: 2px solid #00d4ff;
+            box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .mode-indicator {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .status-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-icon.active {
+            background: #00ff88;
+            color: #000;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        .status-icon.inactive {
+            background: #333;
+            color: #666;
+        }
+
+        .status-icon.warning {
+            background: #ff9500;
+            color: #000;
+            box-shadow: 0 0 10px #ff9500;
+        }
+
+        .content-area {
+            height: 236px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 0;
+        }
+
+        .main-panel {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-right: 2px solid #1a3a4a;
+        }
+
+        .side-panel {
+            background: #0d0d15;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .primary-value {
+            font-size: 72px;
+            font-weight: 700;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .primary-label {
+            font-size: 18px;
+            color: #6a9fb5;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .secondary-value {
+            font-size: 48px;
+            font-weight: 600;
+            color: #00ff88;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+            margin-top: 10px;
+        }
+
+        .secondary-label {
+            font-size: 14px;
+            color: #5a8a6a;
+            margin-top: 2px;
+        }
+
+        .info-row {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid #00d4ff;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: #6a9fb5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        .info-value.positive {
+            color: #00ff88;
+        }
+
+        .info-value.negative {
+            color: #ff5555;
+        }
+
+        /* === КНОПКИ УПРАВЛЕНИЯ === */
+        .button-row {
+            display: flex;
+            gap: 5px;
+            margin-top: auto;
+        }
+
+        .control-btn {
+            flex: 1;
+            height: 35px;
+            background: linear-gradient(180deg, #2a4a5a 0%, #1a2a3a 100%);
+            border: 1px solid #3a6a8a;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: linear-gradient(180deg, #3a5a7a 0%, #2a3a5a 100%);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(180deg, #00d4ff 0%, #0088aa 100%);
+            color: #000;
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+        }
+
+        /* === МЕНЮ/НАСТРОЙКИ === */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .menu-item {
+            background: linear-gradient(135deg, #1a3a4a 0%, #0d1a2a 100%);
+            border: 2px solid #2a5a7a;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-item:hover {
+            background: linear-gradient(135deg, #2a5a8a 0%, #1a3a5a 100%);
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .menu-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .menu-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* === СПИСОК (для меню выбора) === */
+        .list-container {
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid #00d4ff;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-left-width: 5px;
+        }
+
+        .list-item.selected {
+            background: rgba(0, 255, 136, 0.2);
+            border-left-color: #00ff88;
+        }
+
+        .list-item-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .list-item-value {
+            font-size: 16px;
+            color: #00d4ff;
+            font-weight: 700;
+        }
+
+        /* === ИНДИКАТОРЫ === */
+        .rpm-bar {
+            width: 100%;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .rpm-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+            transition: width 0.3s;
+        }
+
+        .submode-indicator {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .submode-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+        }
+
+        .submode-dot.active {
+            background: #00ff88;
+            box-shadow: 0 0 8px #00ff88;
+        }
+
+        /* === РЕЖИМ ОШИБКИ === */
+        .error-panel {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff3333;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin: 10px;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            color: #ff3333;
+            margin-bottom: 10px;
+        }
+
+        .error-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ff6666;
+        }
+
+        /* === PROGRESS BAR === */
+        .progress-container {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #6a9fb5;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #2a4a5a;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff 0%, #0088ff 100%);
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+            transition: width 0.5s;
+        }
+
+        /* === MULTI-VALUE DISPLAY === */
+        .value-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .value-box {
+            text-align: center;
+        }
+
+        .value-box-number {
+            font-size: 42px;
+            font-weight: 700;
+            color: #00d4ff;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+        }
+
+        .value-box-label {
+            font-size: 12px;
+            color: #6a9fb5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Design #8 - Dark Theme Pro - 480x272 - 6 Screens Menu</h1>
+
+        <div class="screens-grid">
+
+            <!-- ЭКРАН 1: M3 - РЕЗЬБА (Thread Mode) -->
+            <div class="screen-wrapper">
+                <div class="screen-title">Экран 1: M3 - Нарезание резьбы</div>
+                <div class="screen">
+                    <div class="statusbar">
+                        <div class="mode-indicator">M3 - РЕЗЬБА</div>
+                        <div class="status-icons">
+                            <div class="status-icon active">S2</div>
+                            <div class="status-icon active">⚡</div>
+                            <div class="status-icon inactive">⚠</div>
+                        </div>
+                    </div>
+                    <div class="content-area">
+                        <div class="main-panel">
+                            <div class="primary-value">1.50</div>
+                            <div class="primary-label">Шаг мм</div>
+                            <div class="submode-indicator">
+                                <div class="submode-dot"></div>
+                                <div class="submode-dot active"></div>
+                                <div class="submode-dot"></div>
+                            </div>
+                            <div class="secondary-value">1650</div>
+                            <div class="secondary-label">RPM</div>
+                            <div class="rpm-bar">
+                                <div class="rpm-bar-fill" style="width: 82%"></div>
+                            </div>
+                        </div>
+                        <div class="side-panel">
+                            <div class="info-row">
+                                <div class="info-label">Позиция Z</div>
+                                <div class="info-value positive">+125.45</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Позиция X</div>
+                                <div class="info-value negative">-42.78</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Подача</div>
+                                <div class="info-value">0.15</div>
+                            </div>
+                            <div class="button-row">
+                                <div class="control-btn">▲</div>
+                                <div class="control-btn active">OK</div>
+                                <div class="control-btn">▼</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 2: M1 - ТОКАРНЫЙ РЕЖИМ -->
+            <div class="screen-wrapper">
+                <div class="screen-title">Экран 2: M1 - Токарный режим</div>
+                <div class="screen">
+                    <div class="statusbar">
+                        <div class="mode-indicator">M1 - ТОКАРНЫЙ</div>
+                        <div class="status-icons">
+                            <div class="status-icon active">S1</div>
+                            <div class="status-icon active">⚡</div>
+                            <div class="status-icon inactive">⚠</div>
+                        </div>
+                    </div>
+                    <div class="content-area">
+                        <div class="main-panel">
+                            <div class="value-grid">
+                                <div class="value-box">
+                                    <div class="value-box-number">0.25</div>
+                                    <div class="value-box-label">Подача</div>
+                                </div>
+                                <div class="value-box">
+                                    <div class="value-box-number">2100</div>
+                                    <div class="value-box-label">RPM</div>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Глубина резания</span>
+                                    <span>2.5 / 5.0 мм</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="side-panel">
+                            <div class="info-row">
+                                <div class="info-label">Позиция Z</div>
+                                <div class="info-value positive">+85.22</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Позиция X</div>
+                                <div class="info-value negative">-15.60</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Скорость</div>
+                                <div class="info-value">525</div>
+                            </div>
+                            <div class="button-row">
+                                <div class="control-btn">◄</div>
+                                <div class="control-btn active">■</div>
+                                <div class="control-btn">►</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 3: M2 - РЕЖИМ ПОДАЧИ -->
+            <div class="screen-wrapper">
+                <div class="screen-title">Экран 3: M2 - Режим подачи</div>
+                <div class="screen">
+                    <div class="statusbar">
+                        <div class="mode-indicator">M2 - ПОДАЧА</div>
+                        <div class="status-icons">
+                            <div class="status-icon active">S3</div>
+                            <div class="status-icon active">⚡</div>
+                            <div class="status-icon inactive">⚠</div>
+                        </div>
+                    </div>
+                    <div class="content-area">
+                        <div class="main-panel">
+                            <div class="primary-value">0.35</div>
+                            <div class="primary-label">мм/об</div>
+                            <div class="submode-indicator">
+                                <div class="submode-dot"></div>
+                                <div class="submode-dot"></div>
+                                <div class="submode-dot active"></div>
+                            </div>
+                            <div class="secondary-value">1850</div>
+                            <div class="secondary-label">RPM</div>
+                            <div class="rpm-bar">
+                                <div class="rpm-bar-fill" style="width: 62%"></div>
+                            </div>
+                        </div>
+                        <div class="side-panel">
+                            <div class="info-row">
+                                <div class="info-label">Позиция Z</div>
+                                <div class="info-value positive">+156.89</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Позиция X</div>
+                                <div class="info-value negative">-88.34</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Скорость</div>
+                                <div class="info-value">647</div>
+                            </div>
+                            <div class="button-row">
+                                <div class="control-btn">−</div>
+                                <div class="control-btn active">►</div>
+                                <div class="control-btn">+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 4: M4 - ТОРЦЕВАНИЕ -->
+            <div class="screen-wrapper">
+                <div class="screen-title">Экран 4: M4 - Торцевание</div>
+                <div class="screen">
+                    <div class="statusbar">
+                        <div class="mode-indicator">M4 - ТОРЦЕВАНИЕ</div>
+                        <div class="status-icons">
+                            <div class="status-icon active">S1</div>
+                            <div class="status-icon active">⚡</div>
+                            <div class="status-icon warning">⚠</div>
+                        </div>
+                    </div>
+                    <div class="content-area">
+                        <div class="main-panel">
+                            <div class="value-grid">
+                                <div class="value-box">
+                                    <div class="value-box-number">0.18</div>
+                                    <div class="value-box-label">Глубина</div>
+                                </div>
+                                <div class="value-box">
+                                    <div class="value-box-number">1200</div>
+                                    <div class="value-box-label">RPM</div>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Прогресс</span>
+                                    <span>75%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="side-panel">
+                            <div class="info-row">
+                                <div class="info-label">Позиция Z</div>
+                                <div class="info-value positive">+45.12</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Позиция X</div>
+                                <div class="info-value negative">-125.88</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Остаток</div>
+                                <div class="info-value">12.5</div>
+                            </div>
+                            <div class="button-row">
+                                <div class="control-btn">СТОП</div>
+                                <div class="control-btn active">ПАУЗА</div>
+                                <div class="control-btn">СТАРТ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 5: ГЛАВНОЕ МЕНЮ -->
+            <div class="screen-wrapper">
+                <div class="screen-title">Экран 5: Главное меню</div>
+                <div class="screen">
+                    <div class="statusbar">
+                        <div class="mode-indicator">⚙ МЕНЮ</div>
+                        <div class="status-icons">
+                            <div class="status-icon inactive">S-</div>
+                            <div class="status-icon inactive">⚡</div>
+                            <div class="status-icon inactive">⚠</div>
+                        </div>
+                    </div>
+                    <div class="content-area" style="grid-template-columns: 1fr;">
+                        <div class="menu-grid">
+                            <div class="menu-item">
+                                <div class="menu-icon">🔧</div>
+                                <div class="menu-label">Режимы работы</div>
+                            </div>
+                            <div class="menu-item">
+                                <div class="menu-icon">⚙</div>
+                                <div class="menu-label">Настройки</div>
+                            </div>
+                            <div class="menu-item">
+                                <div class="menu-icon">📊</div>
+                                <div class="menu-label">Статистика</div>
+                            </div>
+                            <div class="menu-item">
+                                <div class="menu-icon">🎨</div>
+                                <div class="menu-label">Темы</div>
+                            </div>
+                            <div class="menu-item">
+                                <div class="menu-icon">🔌</div>
+                                <div class="menu-label">Калибровка</div>
+                            </div>
+                            <div class="menu-item">
+                                <div class="menu-icon">ℹ</div>
+                                <div class="menu-label">О системе</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭКРАН 6: ВЫБОР РЕЖИМА (Список) -->
+            <div class="screen-wrapper">
+                <div class="screen-title">Экран 6: Выбор режима работы</div>
+                <div class="screen">
+                    <div class="statusbar">
+                        <div class="mode-indicator">ВЫБОР РЕЖИМА</div>
+                        <div class="status-icons">
+                            <div class="status-icon inactive">S-</div>
+                            <div class="status-icon inactive">⚡</div>
+                            <div class="status-icon inactive">⚠</div>
+                        </div>
+                    </div>
+                    <div class="content-area" style="grid-template-columns: 1fr;">
+                        <div class="list-container">
+                            <div class="list-item">
+                                <div class="list-item-label">M1 - Токарный</div>
+                                <div class="list-item-value">→</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-label">M2 - Подача</div>
+                                <div class="list-item-value">→</div>
+                            </div>
+                            <div class="list-item selected">
+                                <div class="list-item-label">M3 - Резьба</div>
+                                <div class="list-item-value">✓</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-label">M4 - Торцевание</div>
+                                <div class="list-item-value">→</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-label">M5 - Сверление</div>
+                                <div class="list-item-value">→</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-label">M6 - Растачивание</div>
+                                <div class="list-item-value">→</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #6a9fb5;">
+            <p style="font-size: 18px; margin-bottom: 10px;">
+                🎨 <strong>Design #8 - Dark Theme Pro</strong> для JC4827W543 (4.3" 480×272)
+            </p>
+            <p style="font-size: 14px;">
+                Современный темный интерфейс с неоновыми акцентами<br>
+                6 разных экранов: режимы работы, меню и выбор
+            </p>
+        </div>
+    </div>
+</body>
+</html>
