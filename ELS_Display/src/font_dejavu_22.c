@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 22 px
  * Bpp: 4
- * Opts: --bpp 4 --size 22 --no-compress --font /Users/marknadelman/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/.pio/libdeps/jc4827w543/lvgl/scripts/built_in_font/DejaVuSans.ttf -r 0x20-0x7F,0x400-0x4FF --format lvgl --output /Users/marknadelman/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/src/font_dejavu_22.c
+ * Opts: --bpp 4 --size 22 --no-compress --font /project/ELS_Display/.pio/libdeps/jc4827w543/lvgl/scripts/built_in_font/DejaVuSans.ttf -r 0x20-0x7F,0x400-0x4FF --format lvgl --output /project/ELS_Display/src/font_dejavu_22.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

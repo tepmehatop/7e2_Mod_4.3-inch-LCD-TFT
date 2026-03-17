@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 84 px
  * Bpp: 4
- * Opts: --font /Users/marknadelman/Library/Caches/electron-builder/wine/wine-4.0.1-mac/share/wine/fonts/tahomabd.ttf -r 0x002B,0x002D-0x003A --size 84 --format lvgl --bpp 4 --no-compress -o /Users/marknadelman/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/src/fonts_bold/font_tahoma_bold_84.c
+ * Opts: --font ~/Library/Caches/electron-builder/wine/wine-4.0.1-mac/share/wine/fonts/tahomabd.ttf -r 0x002B,0x002D-0x003A --size 84 --format lvgl --bpp 4 --no-compress -o /project/ELS_Display/src/fonts_bold/font_tahoma_bold_84.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE
