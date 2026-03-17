@@ -131,14 +131,17 @@ extern ColorScheme current_color_scheme;
 // UART КОНФИГУРАЦИЯ (связь с Arduino Mega)
 // ============================================================================
 
-#define UART_BAUD_RATE  115200
+// 57600 — надёжный потолок SoftwareSerial на Arduino Mega (16МГц)
+// ESP32 аппаратный UART поддерживает любую скорость
+#define UART_BAUD_RATE  57600
 #define UART_BUFFER_SIZE 256
 
 #ifdef DISPLAY_JC4827W543
-    // ESP32-S3 UART пины через P1 разъём платы JC4827W543
+    // ESP32-S3 UART пины через P1 разъём платы JC4827W543 — НЕ МЕНЯЮТСЯ
     // P1 TX = GPIO43 (UART0 TX по умолчанию, выходит на P1 разъём)
     // P1 RX = GPIO44 (UART0 RX по умолчанию, выходит на P1 разъём)
-    // Подключение: Arduino Pin18(TX1) → P1_RX(GPIO44), Arduino Pin19(RX1) → P1_TX(GPIO43)
+    // Подключение: Arduino Pin51(SS_TX) → P1_RX(GPIO44), Arduino Pin52(SS_RX) → P1_TX(GPIO43)
+    // (Пины 18/19 освобождены → возвращены ручному энкодеру Hand Encoder 100Lines)
     #define UART_RX_PIN     44  // P1 RX = GPIO44
     #define UART_TX_PIN     43  // P1 TX = GPIO43
 #else

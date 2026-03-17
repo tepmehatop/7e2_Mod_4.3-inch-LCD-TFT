@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELS Display - Варианты дизайна UI (визуализация)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .design-card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .design-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.5);
+        }
+
+        .design-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .design-number {
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .design-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            flex-grow: 1;
+            text-align: right;
+        }
+
+        .screen {
+            width: 240px;
+            height: 320px;
+            border: 3px solid #444;
+            border-radius: 8px;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+
+        .design-info {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .design-info strong {
+            color: #fff;
+        }
+
+        .select-button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .select-button:hover {
+            background: #218838;
+        }
+
+        .select-button:active {
+            background: #1e7e34;
+        }
+
+        /* ==================== Общие классы для дизайнов ==================== */
+        .header {
+            background: #1e3a8a;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .main-value {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            padding: 20px 0;
+        }
+
+        .position-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .rpm-display {
+            text-align: center;
+            padding: 10px;
+            font-size: 20px;
+        }
+
+        .button-row {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: #1a1a1a;
+        }
+
+        .btn {
+            width: 60px;
+            height: 50px;
+            background: #444;
+            border: 2px solid #666;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        /* ==================== Дизайн #1: Классический станочный ==================== */
+        .design-1 { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; }
+        .design-1 .header { background: #1a1a1a; border-bottom: 2px solid #00ff00; }
+        .design-1 .main-value { background: #1a1a1a; border: 2px solid #00ff00; margin: 10px; }
+
+        /* ==================== Дизайн #2: Минималистичный ==================== */
+        .design-2 { background: #ffffff; color: #000; }
+        .design-2 .header { background: transparent; color: #666; font-size: 12px; padding: 5px; }
+        .design-2 .main-value { font-size: 64px; color: #000; }
+        .design-2 .separator { height: 2px; background: #ddd; margin: 10px 20px; }
+
+        /* ==================== Дизайн #3: Приборная панель ==================== */
+        .design-3 { background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%); color: #fff; }
+        .design-3 .gauge {
+            width: 120px;
+            height: 120px;
+            border: 3px solid #ff6b00;
+            border-radius: 50%;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: radial-gradient(circle, #2a2a2a, #1a1a1a);
+        }
+        .design-3 .gauge-value { font-size: 32px; color: #ff6b00; }
+        .design-3 .gauge-label { font-size: 12px; color: #999; }
+
+        /* ==================== Дизайн #4: Табличный ==================== */
+        .design-4 { background: #fff; color: #000; font-size: 14px; }
+        .design-4 table { width: 100%; border-collapse: collapse; }
+        .design-4 td { padding: 8px; border: 1px solid #ddd; }
+        .design-4 td:first-child { background: #f0f0f0; font-weight: bold; width: 40%; }
+
+        /* ==================== Дизайн #5: Крупные блоки ==================== */
+        .design-5 { background: #f5f5f5; padding: 10px; }
+        .design-5 .block {
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+        .design-5 .block-mode { background: #1e3a8a; }
+        .design-5 .block-pos { background: #059669; display: inline-block; width: 48%; margin: 1%; }
+        .design-5 .block-main { background: #f59e0b; font-size: 32px; }
+        .design-5 .block-rpm { background: #6b7280; }
+
+        /* ==================== Дизайн #6: Градиентный ==================== */
+        .design-6 { background: linear-gradient(180deg, #1e3a8a, #3b82f6); color: white; padding: 10px; }
+        .design-6 .gradient-box {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ==================== Дизайн #7: Информационная лента ==================== */
+        .design-7 { background: #fff; color: #000; }
+        .design-7 .strip {
+            padding: 10px;
+            border-left: 4px solid #1e3a8a;
+            background: #f0f0f0;
+            margin: 2px 0;
+        }
+        .design-7 .strip:nth-child(odd) { background: #e0e0e0; }
+
+        /* ==================== Дизайн #8: Компактный 3-колоночный ==================== */
+        .design-8 { background: #fff; color: #000; font-size: 13px; }
+        .design-8 .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .design-8 .col { text-align: center; }
+        .design-8 .col-header { font-size: 10px; color: #666; }
+        .design-8 .col-value { font-size: 20px; font-weight: bold; }
+
+        /* ==================== Дизайн #9: Числовой дисплей (LED) ==================== */
+        .design-9 { background: #000; color: #ff0000; font-family: 'Courier New', monospace; }
+        .design-9 .led-digit {
+            font-size: 48px;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #ff0000;
+            text-align: center;
+            padding: 15px;
+            background: #1a0000;
+            margin: 10px;
+            border-radius: 8px;
+        }
+
+        /* ==================== Дизайн #10: Графический ==================== */
+        .design-10 { background: #1a1a1a; color: #fff; }
+        .design-10 .progress-bar {
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 10px;
+        }
+        .design-10 .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            transition: width 0.3s;
+        }
+
+        /* ==================== Дизайн #11: Двухпанельный ==================== */
+        .design-11 { display: flex; flex-direction: column; }
+        .design-11 .panel-top {
+            height: 200px;
+            background: #2a2a2a;
+            color: white;
+            padding: 15px;
+            border-bottom: 3px solid #1e3a8a;
+        }
+        .design-11 .panel-bottom {
+            height: 120px;
+            background: #1e3a8a;
+            color: white;
+            padding: 15px;
+        }
+
+        /* ==================== Дизайн #12: Сетка параметров ==================== */
+        .design-12 { background: #f0f0f0; padding: 10px; }
+        .design-12 .tile {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 8px;
+        }
+        .design-12 .tile-small { display: inline-block; width: 48%; margin: 1%; }
+
+        /* ==================== Дизайн #13: Вертикальная полоса ==================== */
+        .design-13 { display: flex; }
+        .design-13 .sidebar {
+            width: 60px;
+            background: #1e3a8a;
+            color: white;
+            padding: 10px 5px;
+            text-align: center;
+            writing-mode: vertical-rl;
+            font-weight: bold;
+        }
+        .design-13 .content {
+            flex: 1;
+            background: white;
+            color: black;
+            padding: 15px;
+        }
+
+        /* ==================== Дизайн #14: Иерархический ==================== */
+        .design-14 { background: white; color: black; padding: 15px; }
+        .design-14 .huge { font-size: 64px; text-align: center; font-weight: bold; color: #000; }
+        .design-14 .medium { font-size: 20px; padding: 10px; border-top: 1px solid #ddd; }
+        .design-14 .small { font-size: 14px; padding: 8px; color: #666; border-top: 1px solid #eee; }
+
+        /* ==================== Дизайн #15: Круговая композиция ==================== */
+        .design-15 { background: #000; color: #0ff; }
+        .design-15 .circle-frame {
+            width: 160px;
+            height: 160px;
+            border: 3px solid #0ff;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 0 0 20px #0ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 ELS Display - Варианты дизайна UI</h1>
+    <p class="subtitle">ESP32-2432S024 (2.4" 240x320) | Все дизайны в масштабе 1:1</p>
+
+    <div class="grid">
+
+        <!-- ========== ДИЗАЙН #1: Классический станочный ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#1</div>
+                <div class="design-title">Классический станочный</div>
+            </div>
+            <div class="screen design-1">
+                <div class="header">▲ РЕЖИМ: M3 - РЕЗЬБА</div>
+                <div class="main-value" style="margin-top: 20px;">
+                    РЕЗЬБА<br>
+                    <span style="font-size: 56px;">1.50</span><br>
+                    <span style="font-size: 24px;">мм</span>
+                </div>
+                <div class="position-row">
+                    <div>Z: +123.45</div>
+                    <div>X: -67.89</div>
+                </div>
+                <div class="rpm-display">🔄 1500 RPM</div>
+                <div class="button-row">
+                    <div class="btn">▲</div>
+                    <div class="btn">✓</div>
+                    <div class="btn">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Промышленный CNC<br>
+                <strong>Цвет:</strong> Черный фон, зеленые цифры<br>
+                <strong>Особенности:</strong> Высокий контраст, крупные читаемые цифры
+            </div>
+            <button class="select-button" onclick="selectDesign(1)">✓ Выбрать дизайн #1</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #2: Минималистичный ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#2</div>
+                <div class="design-title">Минималистичный</div>
+            </div>
+            <div class="screen design-2">
+                <div class="header">M3 - Thread</div>
+                <div class="main-value" style="margin-top: 30px;">
+                    1.50<br>
+                    <span style="font-size: 24px;">мм</span>
+                </div>
+                <div style="font-size: 14px; text-align: center; color: #666;">
+                    Z: 123.45 &nbsp;&nbsp; X: -67.89
+                </div>
+                <div class="separator"></div>
+                <div style="font-size: 18px; text-align: center; padding: 10px;">
+                    1500 RPM
+                </div>
+                <div class="button-row">
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Современный минимализм<br>
+                <strong>Цвет:</strong> Белый фон, темные цифры<br>
+                <strong>Особенности:</strong> Чистый дизайн, фокус на главном
+            </div>
+            <button class="select-button" onclick="selectDesign(2)">✓ Выбрать дизайн #2</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #3: Приборная панель ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#3</div>
+                <div class="design-title">Приборная панель</div>
+            </div>
+            <div class="screen design-3">
+                <div style="padding: 10px; text-align: center; font-size: 14px;">
+                    M3 - РЕЗЬБА &nbsp;&nbsp; [S2]
+                </div>
+                <div class="gauge">
+                    <div class="gauge-value">1500</div>
+                    <div class="gauge-label">RPM</div>
+                </div>
+                <div style="text-align: center; font-size: 32px; padding: 10px;">
+                    1.50 мм
+                </div>
+                <div style="display: flex; justify-content: space-around; font-size: 16px; padding: 10px;">
+                    <div>Z: +123.45</div>
+                    <div>X: -67.89</div>
+                </div>
+                <div class="button-row">
+                    <div class="btn">▲</div>
+                    <div class="btn">✓</div>
+                    <div class="btn">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Автомобильная панель<br>
+                <strong>Цвет:</strong> Темный фон, оранжевые акценты<br>
+                <strong>Особенности:</strong> Круговой индикатор, аналоговый вид
+            </div>
+            <button class="select-button" onclick="selectDesign(3)">✓ Выбрать дизайн #3</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #4: Табличный ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#4</div>
+                <div class="design-title">Табличный</div>
+            </div>
+            <div class="screen design-4">
+                <table style="margin-top: 10px;">
+                    <tr><td>РЕЖИМ</td><td>M3 - Thread</td></tr>
+                    <tr><td>ПОДРЕЖИМ</td><td>S2 - Manual</td></tr>
+                    <tr><td>РЕЗЬБА</td><td style="font-weight: bold; font-size: 18px;">1.50 мм</td></tr>
+                    <tr><td>ПОЗ. Z</td><td>+123.45 мм</td></tr>
+                    <tr><td>ПОЗ. X</td><td>-67.89 мм</td></tr>
+                    <tr><td>ОБОРОТЫ</td><td>1500 RPM</td></tr>
+                </table>
+                <div class="button-row">
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Структурированный<br>
+                <strong>Цвет:</strong> Белый фон, серые границы<br>
+                <strong>Особенности:</strong> Вся информация в таблице, максимальная информативность
+            </div>
+            <button class="select-button" onclick="selectDesign(4)">✓ Выбрать дизайн #4</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #5: Крупные блоки ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#5</div>
+                <div class="design-title">Крупные блоки</div>
+            </div>
+            <div class="screen design-5">
+                <div class="block block-mode">M3 - РЕЗЬБА</div>
+                <div class="block block-pos">Z: +123</div>
+                <div class="block block-pos">X: -67.8</div>
+                <div class="block block-main">1.50 мм</div>
+                <div class="block block-rpm">🔄 1500 RPM</div>
+                <div class="button-row" style="background: #f5f5f5;">
+                    <div class="btn">▲</div>
+                    <div class="btn">✓</div>
+                    <div class="btn">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Блочный/карточный<br>
+                <strong>Цвет:</strong> Разноцветные блоки<br>
+                <strong>Особенности:</strong> Каждый параметр в своем цветном блоке
+            </div>
+            <button class="select-button" onclick="selectDesign(5)">✓ Выбрать дизайн #5</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #6: Градиентный ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#6</div>
+                <div class="design-title">Градиентный</div>
+            </div>
+            <div class="screen design-6">
+                <div class="gradient-box" style="margin-top: 10px;">M3 - Thread</div>
+                <div class="gradient-box" style="font-size: 48px; text-align: center;">
+                    1.50<br>
+                    <span style="font-size: 20px;">мм</span>
+                </div>
+                <div style="font-size: 16px; padding: 10px;">
+                    Z: 123.45 &nbsp;│&nbsp; X: -67.89
+                </div>
+                <div class="gradient-box">🔄 1500 RPM</div>
+                <div class="button-row" style="background: rgba(0,0,0,0.3);">
+                    <div class="btn" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3);">▲</div>
+                    <div class="btn" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3);">✓</div>
+                    <div class="btn" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3);">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Современный с градиентами<br>
+                <strong>Цвет:</strong> Синий градиент, полупрозрачные элементы<br>
+                <strong>Особенности:</strong> Плавные переходы, закругленные углы
+            </div>
+            <button class="select-button" onclick="selectDesign(6)">✓ Выбрать дизайн #6</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #7: Информационная лента ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#7</div>
+                <div class="design-title">Информационная лента</div>
+            </div>
+            <div class="screen design-7">
+                <div class="strip" style="margin-top: 10px;">M3 - РЕЗЬБА</div>
+                <div class="strip">S2 - РУЧНОЙ</div>
+                <div style="text-align: center; font-size: 48px; font-weight: bold; padding: 20px 0;">
+                    1.50<br><span style="font-size: 20px;">мм</span>
+                </div>
+                <div class="strip">Z: +123.45 мм</div>
+                <div class="strip">X: -67.89 мм</div>
+                <div class="strip">🔄 1500 RPM</div>
+                <div class="button-row" style="background: white;">
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Ленточный<br>
+                <strong>Цвет:</strong> Белый фон, серые полосы<br>
+                <strong>Особенности:</strong> Горизонтальные полосы информации
+            </div>
+            <button class="select-button" onclick="selectDesign(7)">✓ Выбрать дизайн #7</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #8: Компактный 3-колоночный ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#8</div>
+                <div class="design-title">Компактный 3-колоночный</div>
+            </div>
+            <div class="screen design-8">
+                <div style="padding: 8px; background: #f0f0f0; border-bottom: 2px solid #1e3a8a;">
+                    M3 - Thread &nbsp;│&nbsp; S2 - Manual
+                </div>
+                <div class="three-col">
+                    <div class="col">
+                        <div class="col-header">РЕЗЬБА</div>
+                        <div class="col-value">1.50</div>
+                        <div style="font-size: 10px;">мм</div>
+                    </div>
+                    <div class="col">
+                        <div class="col-header">Z</div>
+                        <div class="col-value">+123</div>
+                        <div style="font-size: 10px;">мм</div>
+                    </div>
+                    <div class="col">
+                        <div class="col-header">X</div>
+                        <div class="col-value">-67.9</div>
+                        <div style="font-size: 10px;">мм</div>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 15px; font-size: 20px; border-bottom: 1px solid #ddd;">
+                    🔄 1500 RPM
+                </div>
+                <div style="padding: 8px; font-size: 12px; border-bottom: 1px solid #ddd;">
+                    Подача: 0.25 мм/об
+                </div>
+                <div style="padding: 8px; font-size: 12px; border-bottom: 1px solid #ddd;">
+                    Лимиты: L━ R━ F━ B━
+                </div>
+                <div class="button-row" style="background: white;">
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Компактный<br>
+                <strong>Цвет:</strong> Белый фон, структурированные данные<br>
+                <strong>Особенности:</strong> Максимум информации в 3 колонки
+            </div>
+            <button class="select-button" onclick="selectDesign(8)">✓ Выбрать дизайн #8</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #9: Числовой дисплей (LED) ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#9</div>
+                <div class="design-title">Числовой дисплей (LED)</div>
+            </div>
+            <div class="screen design-9">
+                <div style="padding: 10px; font-size: 14px; text-align: center;">M3 - РЕЗЬБА</div>
+                <div class="led-digit">1.50</div>
+                <div style="text-align: center; font-size: 16px; color: #ff0000;">мм</div>
+                <div style="padding: 10px; font-size: 14px;">
+                    Z: <span class="led-digit" style="display: inline-block; font-size: 20px; margin: 0; padding: 5px;">123.45</span>
+                </div>
+                <div style="padding: 10px; font-size: 14px;">
+                    X: <span class="led-digit" style="display: inline-block; font-size: 20px; margin: 0; padding: 5px;"> 67.89</span>
+                </div>
+                <div class="led-digit" style="margin-top: 10px; font-size: 32px;">1500</div>
+                <div style="text-align: center; font-size: 14px; color: #ff0000;">RPM</div>
+                <div class="button-row">
+                    <div class="btn">▲</div>
+                    <div class="btn">✓</div>
+                    <div class="btn">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Ретро LED<br>
+                <strong>Цвет:</strong> Черный фон, красные цифры<br>
+                <strong>Особенности:</strong> Стиль 7-сегментного дисплея, как старые ЧПУ
+            </div>
+            <button class="select-button" onclick="selectDesign(9)">✓ Выбрать дизайн #9</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #10: Графический ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#10</div>
+                <div class="design-title">Графический</div>
+            </div>
+            <div class="screen design-10">
+                <div style="padding: 10px; font-size: 14px; text-align: center;">
+                    ⚙ M3 - РЕЗЬБА &nbsp;&nbsp; ✋ S2
+                </div>
+                <div style="text-align: center; font-size: 40px; font-weight: bold; padding: 15px; background: #2a2a2a; margin: 10px; border-radius: 8px;">
+                    1.50 мм
+                </div>
+                <div style="font-size: 12px; padding: 5px 10px;">
+                    Z: +123.45 мм
+                    <div class="progress-bar" style="margin-top: 3px;">
+                        <div class="progress-fill" style="width: 65%;"></div>
+                    </div>
+                </div>
+                <div style="font-size: 12px; padding: 5px 10px;">
+                    X: -67.89 мм
+                    <div class="progress-bar" style="margin-top: 3px;">
+                        <div class="progress-fill" style="width: 45%;"></div>
+                    </div>
+                </div>
+                <div style="padding: 10px; font-size: 16px;">RPM: ▁▂▃▅▆▇█ 1500</div>
+                <div style="margin: 10px; padding: 8px; background: #2a2a2a; border-radius: 6px; font-size: 12px;">
+                    Лимиты: L● R○ F○ B●
+                </div>
+                <div class="button-row">
+                    <div class="btn">▲</div>
+                    <div class="btn">✓</div>
+                    <div class="btn">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Визуальный<br>
+                <strong>Цвет:</strong> Темный фон, цветные графики<br>
+                <strong>Особенности:</strong> Прогресс-бары, иконки, мини-графики
+            </div>
+            <button class="select-button" onclick="selectDesign(10)">✓ Выбрать дизайн #10</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #11: Двухпанельный ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#11</div>
+                <div class="design-title">Двухпанельный</div>
+            </div>
+            <div class="screen design-11">
+                <div class="panel-top">
+                    <div style="font-size: 14px; margin-bottom: 10px;">M3 - РЕЗЬБА</div>
+                    <div style="font-size: 40px; text-align: center; margin: 20px 0;">1.50 мм</div>
+                    <div style="font-size: 14px;">Z: +123.45 &nbsp;&nbsp; X: -67.89</div>
+                    <div style="font-size: 16px; margin-top: 10px;">🔄 1500 RPM</div>
+                </div>
+                <div class="panel-bottom">
+                    <div style="text-align: center; margin-bottom: 10px;">УПРАВЛЕНИЕ</div>
+                    <div class="button-row" style="position: static; background: transparent; padding: 5px;">
+                        <div class="btn" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4);">▲</div>
+                        <div class="btn" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4);">✓</div>
+                        <div class="btn" style="background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4);">▼</div>
+                    </div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Разделенный на зоны<br>
+                <strong>Цвет:</strong> Серая верхняя панель, синяя нижняя<br>
+                <strong>Особенности:</strong> Четкое разделение информации и управления
+            </div>
+            <button class="select-button" onclick="selectDesign(11)">✓ Выбрать дизайн #11</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #12: Сетка параметров ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#12</div>
+                <div class="design-title">Сетка параметров</div>
+            </div>
+            <div class="screen design-12">
+                <div class="tile tile-small">
+                    <div style="font-size: 10px; color: #666;">РЕЖИМ</div>
+                    <div style="font-weight: bold;">M3</div>
+                    <div style="font-size: 11px;">Thread</div>
+                </div>
+                <div class="tile tile-small">
+                    <div style="font-size: 10px; color: #666;">ПОДРЕЖИМ</div>
+                    <div style="font-weight: bold;">S2</div>
+                    <div style="font-size: 11px;">Manual</div>
+                </div>
+                <div class="tile" style="font-size: 36px; font-weight: bold;">
+                    1.50<br>
+                    <span style="font-size: 16px;">мм</span>
+                </div>
+                <div class="tile tile-small">
+                    <div style="font-size: 10px; color: #666;">ПОЗ. Z</div>
+                    <div style="font-weight: bold; font-size: 18px;">+123.45</div>
+                </div>
+                <div class="tile tile-small">
+                    <div style="font-size: 10px; color: #666;">ПОЗ. X</div>
+                    <div style="font-weight: bold; font-size: 18px;">-67.89</div>
+                </div>
+                <div class="tile">
+                    <div style="font-size: 20px; font-weight: bold;">🔄 1500 RPM</div>
+                </div>
+                <div class="button-row" style="background: #f0f0f0;">
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Плиточный (Metro/Material)<br>
+                <strong>Цвет:</strong> Белые плитки на сером фоне<br>
+                <strong>Особенности:</strong> Каждый параметр в своей карточке с тенью
+            </div>
+            <button class="select-button" onclick="selectDesign(12)">✓ Выбрать дизайн #12</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #13: Вертикальная полоса ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#13</div>
+                <div class="design-title">Вертикальная полоса</div>
+            </div>
+            <div class="screen design-13">
+                <div class="sidebar">
+                    M3<br>
+                    РЕЗЬБА
+                </div>
+                <div class="content">
+                    <div style="font-size: 48px; font-weight: bold; text-align: center; padding: 20px 0;">
+                        1.50<br>
+                        <span style="font-size: 20px;">мм</span>
+                    </div>
+                    <div style="font-size: 16px; padding: 10px 0;">Z: +123.45 мм</div>
+                    <div style="font-size: 16px; padding: 10px 0;">X: -67.89 мм</div>
+                    <div style="font-size: 18px; padding: 10px 0;">🔄 1500 RPM</div>
+                    <div style="font-size: 14px; padding: 10px 0; color: #666;">Подача: 0.25 мм/об</div>
+                    <div style="font-size: 14px; padding: 10px 0; border-top: 1px solid #ddd;">S2 - Manual</div>
+                    <div class="button-row" style="background: white;">
+                        <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                        <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                        <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                    </div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> С боковой панелью<br>
+                <strong>Цвет:</strong> Синяя полоса слева, белый фон<br>
+                <strong>Особенности:</strong> Вертикальная цветная полоса с режимом
+            </div>
+            <button class="select-button" onclick="selectDesign(13)">✓ Выбрать дизайн #13</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #14: Иерархический ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#14</div>
+                <div class="design-title">Иерархический</div>
+            </div>
+            <div class="screen design-14">
+                <div class="huge" style="padding-top: 30px;">
+                    1.50<br>
+                    <span style="font-size: 24px;">мм</span>
+                </div>
+                <div class="medium">
+                    M3 - РЕЗЬБА<br>
+                    S2 - РУЧНОЙ
+                </div>
+                <div class="small">
+                    Z: +123.45 &nbsp;&nbsp; X: -67.89
+                </div>
+                <div class="small">
+                    RPM: 1500 &nbsp;&nbsp; Подача: 0.25
+                </div>
+                <div class="small">
+                    Лимиты: L:● R:○ F:○ B:●
+                </div>
+                <div class="button-row" style="background: white;">
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▲</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">✓</div>
+                    <div class="btn" style="background: white; color: black; border-color: #ddd;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> По важности<br>
+                <strong>Цвет:</strong> Белый фон, черные цифры<br>
+                <strong>Особенности:</strong> Главное крупно сверху, детали мелко снизу
+            </div>
+            <button class="select-button" onclick="selectDesign(14)">✓ Выбрать дизайн #14</button>
+        </div>
+
+        <!-- ========== ДИЗАЙН #15: Круговая композиция ========== -->
+        <div class="design-card">
+            <div class="design-header">
+                <div class="design-number">#15</div>
+                <div class="design-title">Круговая композиция</div>
+            </div>
+            <div class="screen design-15">
+                <div style="text-align: center; padding: 10px; font-size: 14px;">
+                    M3-Thread &nbsp;&nbsp; S2-Manual
+                </div>
+                <div class="circle-frame">
+                    <div style="font-size: 40px; font-weight: bold;">1.50</div>
+                    <div style="font-size: 16px;">мм</div>
+                    <div style="font-size: 18px; margin-top: 10px;">🔄 1500</div>
+                    <div style="font-size: 12px;">RPM</div>
+                </div>
+                <div style="text-align: center; font-size: 16px; padding: 10px;">
+                    Z: +123.45 &nbsp;&nbsp; X: -67.89
+                </div>
+                <div style="text-align: center; font-size: 14px; padding: 5px;">
+                    Подача: 0.25 мм/об
+                </div>
+                <div class="button-row">
+                    <div class="btn" style="background: transparent; border-color: #0ff;">▲</div>
+                    <div class="btn" style="background: transparent; border-color: #0ff;">✓</div>
+                    <div class="btn" style="background: transparent; border-color: #0ff;">▼</div>
+                </div>
+            </div>
+            <div class="design-info">
+                <strong>Стиль:</strong> Креативный/футуристичный<br>
+                <strong>Цвет:</strong> Черный фон, неоновый голубой<br>
+                <strong>Особенности:</strong> Круговая рамка с эффектом свечения
+            </div>
+            <button class="select-button" onclick="selectDesign(15)">✓ Выбрать дизайн #15</button>
+        </div>
+
+    </div>
+
+    <script>
+        function selectDesign(num) {
+            if (confirm(`Вы выбрали Дизайн #${num}. Сохранить выбор?`)) {
+                alert(`✓ Дизайн #${num} выбран!\n\nСледующий шаг: Я создам полную рабочую прошивку LVGL для этого дизайна.`);
+                console.log('Selected design:', num);
+
+                // Можно отправить выбор на сервер или сохранить локально
+                localStorage.setItem('selectedDesign', num);
+
+                // Подсветить выбранный дизайн
+                document.querySelectorAll('.design-card').forEach(card => {
+                    card.style.border = '';
+                });
+                event.target.closest('.design-card').style.border = '3px solid #28a745';
+            }
+        }
+
+        // Восстановить выбранный дизайн при загрузке
+        window.addEventListener('load', () => {
+            const selected = localStorage.getItem('selectedDesign');
+            if (selected) {
+                const cards = document.querySelectorAll('.design-card');
+                cards[selected - 1].style.border = '3px solid #28a745';
+            }
+        });
+    </script>
+</body>
+</html>

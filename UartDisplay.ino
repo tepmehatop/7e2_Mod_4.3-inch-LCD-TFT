@@ -3,9 +3,15 @@
 // ***** UART ВЫВОД К НОВОМУ ДИСПЛЕЮ (ESP32-S3 JC4827W543) ***** //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Подключение: Arduino Mega  Serial1 (TX=Pin18, RX=Pin19)
-//             ESP32-S3      P1 разъём (RX=GPIO44, TX=GPIO43)
+// Подключение: Arduino Mega  SoftwareSerial (TX=Pin51 → ESP32 GPIO44, RX=Pin52 ← ESP32 GPIO43)
+//             ESP32-S3      P1 разъём (RX=GPIO44, TX=GPIO43) — пины не меняются!
 // ВАЖНО: пины 0/1 (Serial) заняты SerialEmulation.ino!
+//
+// Пины 18(TX1)/19(RX1) были освобождены → возвращены ручному энкодеру (Hand Encoder 100 Lines)
+// Пины 20(SDA)/21(SCL) временно: Wire(I2C LCD) + энкодер шпинделя делят пины.
+//   При записи на старый LCD (I2C) возможны кратковременные помехи в INT0 шпинделя.
+//   Это временно — после окончания тестирования старый LCD будет отключён и пины 20/21
+//   будут полностью возвращены энкодеру шпинделя.
 //
 // ЗНАК ПОЗИЦИЙ: Print.ino показывает позиции с ИНВЕРСИЕЙ знака:
 //   если Size_Z_mm > 0 → "Z-XX.XX" (минус!), если <= 0 → "Z XX.XX"
@@ -17,8 +23,14 @@
 //   [46..55] — G-трубная   (G 1/16..G 2)
 //   [56..65] — K-трубная   (K 1/16..K 2)
 
-#define DISPLAY_UART Serial1
-#define DISPLAY_BAUD 115200
+#include <SoftwareSerial.h>
+// SoftwareSerial RX = Pin52 (PCINT2, порт B — надёжен для приёма)
+// SoftwareSerial TX = Pin51 (MOSI — не используется в проекте)
+// 57600 бод — надёжный потолок SoftwareSerial на 16МГц
+#define DISP_RX_PIN  52  // Mega pin 52 ← ESP32 GPIO43 (TX)
+#define DISP_TX_PIN  51  // Mega pin 51 → ESP32 GPIO44 (RX)
+#define DISPLAY_BAUD 57600
+SoftwareSerial DISPLAY_UART(DISP_RX_PIN, DISP_TX_PIN);
 
 // Границы категорий Thread_Info[] (67 записей: [0-19] метр, [20-46] дюйм, [47-56] G, [57-66] K)
 #define THR_IDX_INCH_START   20
@@ -169,18 +181,11 @@ static int _Display_GetSubMode()
   }
 }
 
-// Рассчитать Циклов для M3 — как Print.ino:
-//   Ручной: ВСЕГДА total (ручной режим не считает проходы)
-//   Внутр/Нар: ОСТАТОК = total - Pass_Nr + 1 (countdown, как старый LCD)
+// Рассчитать TOTAL Циклов для M3 (всего, не остаток).
+// Остаток вычисляется на ESP32 из pass_nr: remaining = total - pass_nr + 1
 static int _Display_GetThreadCycles()
 {
-  int total = Thread_Info[Thread_Step].Pass + PASS_FINISH + Pass_Fin + Thr_Pass_Summ;
-  if (Sub_Mode_Thread == Sub_Mode_Thread_Man) {
-    return total;
-  } else {
-    int remaining = total - Pass_Nr + 1;
-    return (remaining > 0) ? remaining : 1;
-  }
+  return Thread_Info[Thread_Step].Pass + PASS_FINISH + Pass_Fin + Thr_Pass_Summ;
 }
 
 // Отправить все данные о текущей резьбе (имя + RPM + Ход)
@@ -409,6 +414,8 @@ void _Display_ParseRx(String& raw)
       // Полное обновление — покрывает SM1 и SM2/SM3 (Ph, Total_Tooth, CThr, Cutter_Step и др.)
       Display_Send_All();
     }
+    else if (prm == "KEY:LEFT")  { button_left_flag  = false; Key_Left_Pressed();  Display_Send_All(); }
+    else if (prm == "KEY:RIGHT") { button_right_flag = false; Key_Right_Pressed(); Display_Send_All(); }
     else if (prm == "PARAM_OK")  { key_sel_flag = false; Key_Select_Pressed(); }
     else if (prm == "M1") { Switch_Feed();    Beep(); }
     else if (prm == "M2") { Switch_aFeed();   Beep(); }

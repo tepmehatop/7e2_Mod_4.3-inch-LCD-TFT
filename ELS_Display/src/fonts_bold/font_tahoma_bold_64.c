@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 64 px
  * Bpp: 4
- * Opts: --font /System/Library/Fonts/Supplemental/Tahoma Bold.ttf -r 0x0020-0x003A,0x002B,0x002D --size 64 --format lvgl --bpp 4 --no-compress -o /Users/pcUser/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/src/fonts_bold/font_tahoma_bold_64.c
+ * Opts: --font /System/Library/Fonts/Supplemental/Tahoma Bold.ttf -r 0x0020-0x003A,0x002B,0x002D --size 64 --format lvgl --bpp 4 --no-compress -o /Users/marknadelman/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/src/fonts_bold/font_tahoma_bold_64.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

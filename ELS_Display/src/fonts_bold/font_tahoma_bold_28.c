@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 28 px
  * Bpp: 4
- * Opts: --font /System/Library/Fonts/Supplemental/Tahoma Bold.ttf -r 0x0020-0x007E,0x0400-0x044F,0x00B0 --size 28 --format lvgl --bpp 4 --no-compress -o /Users/pcUser/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/src/fonts_bold/font_tahoma_bold_28.c --force-fast-kern-format
+ * Opts: --font /System/Library/Fonts/Supplemental/Tahoma Bold.ttf -r 0x0020-0x007E,0x0400-0x044F,0x00B0 --size 28 --format lvgl --bpp 4 --no-compress -o /Users/marknadelman/IdeaProjects/7e2_Mod_LCD4.3_v1.3/ELS_Display/src/fonts_bold/font_tahoma_bold_28.c --force-fast-kern-format
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

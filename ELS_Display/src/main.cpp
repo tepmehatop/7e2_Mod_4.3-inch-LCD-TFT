@@ -663,8 +663,9 @@ struct SubEdit {
     uint16_t current_tooth; // Делилка: текущая метка (1..total_tooth)
     int16_t  bar_r;         // ШАР: ножка радиус (мм*100, 0..9900)
     int16_t  sphere_r;      // ШАР: радиус шара (мм*100) — редактируется в thr_type_box
+    uint16_t pass_total;    // M1/M2/M4/M5: всего проходов (KEY:LEFT/RIGHT)
 };
-static SubEdit g_sub_edit = {false, -1, 0, 0, 1, 0, 1, 1, 0, 1000};
+static SubEdit g_sub_edit = {false, -1, 0, 0, 1, 0, 1, 1, 0, 1000, 1};
 
 // ============================================================================
 // Состояние алерта — всплывающее уведомление от Arduino
@@ -1156,7 +1157,9 @@ static void create_k_content(lv_obj_t* screen)
         lv_obj_add_event_cb(r.box, [](lv_event_t*) {
             static uint32_t s_r4tap = 0; uint32_t now = millis();
             bool dbl = (now - s_r4tap) < 400; s_r4tap = now;
-            if (dbl) { exit_sub_edit(); uart_protocol.sendButtonPress("PARAM_OK"); }
+            if (dbl) { exit_sub_edit(); uart_protocol.sendButtonPress("PARAM_OK"); return; }
+            if (g_sub_edit.active && g_sub_edit.row == 4) exit_sub_edit();
+            else { exit_sub_edit(); enter_sub_edit(4); }
         }, LV_EVENT_CLICKED, nullptr);
     }
     // Spare1 (col1 bottom): tracked thread-type cell — shown in M3 only
@@ -1399,7 +1402,9 @@ static void create_i_content(lv_obj_t* screen)
         lv_obj_add_event_cb(r.box, [](lv_event_t*) {
             static uint32_t s_r4itap = 0; uint32_t now = millis();
             bool dbl = (now - s_r4itap) < 400; s_r4itap = now;
-            if (dbl) { exit_sub_edit(); uart_protocol.sendButtonPress("PARAM_OK"); }
+            if (dbl) { exit_sub_edit(); uart_protocol.sendButtonPress("PARAM_OK"); return; }
+            if (g_sub_edit.active && g_sub_edit.row == 4) exit_sub_edit();
+            else { exit_sub_edit(); enter_sub_edit(4); }
         }, LV_EVENT_CLICKED, nullptr);
     }
     // Edit arrows (hidden stubs for I layout)
@@ -2726,6 +2731,34 @@ static void exit_edit_mode()
 {
     if (!g_ui.primary_val) return;
 
+    // M3: немедленно зафиксировать локальный label до прихода подтверждения от Arduino
+    // (иначе update_ui_values() покажет старый data.thread_name на долю секунды)
+    if (s_last_mode == MODE_THREAD && g_edit_param.active) {
+        int step = g_edit_param.local_step;
+        if (step >= 0 && step < THREAD_TABLE_SIZE) {
+            const char* lbl = s_thread_table[step].label;
+            char fbuf[12] = {}; char* dst = fbuf;
+            for (const char* src = lbl; *src && dst < fbuf + sizeof(fbuf) - 1; src++) {
+                uint8_t c = (uint8_t)*src;
+                if (c == 0x2B || (c >= 0x2D && c <= 0x3A)) *dst++ = *src;
+            }
+            if (fbuf[0] != '\0') {
+                lv_label_set_text(g_ui.primary_val, fbuf);
+                if (g_ui.primary_val_glow) lv_label_set_text(g_ui.primary_val_glow, fbuf);
+            }
+            if (g_ui.primary_unit) {
+                if (strstr(lbl, "tpi"))
+                    lv_label_set_text(g_ui.primary_unit, "\xD0\x94\xD0\xAE\xD0\x99\xD0\x9C"); // ДЮЙМ
+                else if (lbl[0] == 'G')
+                    lv_label_set_text(g_ui.primary_unit, "G-\xD0\xA2\xD0\xA0\xD0\xA3\xD0\x91"); // G-ТРУБ
+                else if (lbl[0] == 'K')
+                    lv_label_set_text(g_ui.primary_unit, "K-\xD0\xA2\xD0\xA0\xD0\xA3\xD0\x91"); // K-ТРУБ
+                else
+                    lv_label_set_text(g_ui.primary_unit, "\xD0\xA8\xD0\x90\xD0\x93 \xD0\x9C\xD0\x9C"); // ШАГ ММ
+            }
+        }
+    }
+
     g_edit_param.active = false;
 
     // Вернуть основному значению исходный голубой цвет
@@ -2838,31 +2871,41 @@ static void jump_to_thread_type(int first_idx)
 static uint8_t get_editable_rows(LatheMode mode) {
     switch (mode) {
         case MODE_FEED:
-        case MODE_AFEED:   return 0b100;  // row3: Ap (съём)
-        case MODE_THREAD:  return 0;      // row3: ОБ/МИН — read-only
+        case MODE_AFEED:   return 0b10100;  // row3: Ap (bit2), row4: Pass_Total (bit4)
+        case MODE_THREAD:  return 0;        // row3: ОБ/МИН — read-only
         case MODE_CONE_L:
-        case MODE_CONE_R:  return 0b1100;  // row3: КОНУС (bit2); thr_type=СЪЁМ (bit3)
-        case MODE_SPHERE:  return 0b1100;  // row3: НОЖКА ММ (bit2), thr_type=ШАР ММ (bit3)
-        case MODE_DIVIDER: return 0b011;  // row1: Total_Tooth, row2: Current_Tooth
+        case MODE_CONE_R:  return 0b11100;  // row3: КОНУС (bit2), thr_type=СЪЁМ (bit3), row4: Pass_Total (bit4)
+        case MODE_SPHERE:  return 0b1100;   // row3: НОЖКА ММ (bit2), thr_type=ШАР ММ (bit3)
+        case MODE_DIVIDER: return 0b011;    // row1: Total_Tooth, row2: Current_Tooth
         default:           return 0;
     }
 }
 
 static void highlight_sub_edit_row(int row, bool on)
 {
+    // Тёмный фон + жёлтая рамка при редактировании (как primary_edit_box)
     if (row == 3) {
-        // Виртуальная строка 3 = thr_type_box (СЪЁМ в M4/M5)
         if (!g_ui.thr_type_box) return;
         lv_obj_set_style_border_color(g_ui.thr_type_box,
             lv_color_hex(on ? 0xffcc00 : 0xffaa44), 0);
+        lv_obj_set_style_bg_color(g_ui.thr_type_box,
+            lv_color_hex(on ? 0x120a00 : 0x060810), 0);
+        return;
+    }
+    if (row == 4) {
+        if (!g_ui.row4_box) return;
+        lv_obj_set_style_border_color(g_ui.row4_box,
+            lv_color_hex(on ? 0xffcc00 : 0x00d4ff), 0);
+        lv_obj_set_style_bg_color(g_ui.row4_box,
+            lv_color_hex(on ? 0x120a00 : 0x060810), 0);
         return;
     }
     lv_obj_t* boxes[] = {g_ui.row1_box, g_ui.row2_box, g_ui.row3_box};
     if (row < 0 || row > 2) return;
     lv_obj_t* box = boxes[row];
     if (!box) return;
-    lv_obj_set_style_border_color(box,
-        lv_color_hex(on ? 0xffcc00 : 0x00d4ff), 0);  // жёлтый при edit, голубой в норме
+    lv_obj_set_style_border_color(box, lv_color_hex(on ? 0xffcc00 : 0x00d4ff), 0);
+    lv_obj_set_style_bg_color(box,     lv_color_hex(on ? 0x120a00 : 0x0a1828), 0);
 }
 
 static void enter_sub_edit(int row)
@@ -2899,12 +2942,16 @@ static void enter_sub_edit(int row)
     g_sub_edit.current_tooth = d.current_tooth > 0 ? d.current_tooth : 1;
     g_sub_edit.bar_r        = d.bar_r > 0 ? d.bar_r : 100;    // 1.00mm default
     g_sub_edit.sphere_r     = d.sphere_radius > 0 ? d.sphere_radius : 1000;  // 10mm radius = 20mm diam
+    g_sub_edit.pass_total   = d.pass_total > 0 ? d.pass_total : 1;
 
     highlight_sub_edit_row(row, true);
 
     // Сообщить Arduino какой параметр редактируем
-    // SUBSEL:N — это новая команда, Arduino должна её поддержать в будущем
+    // row==4 (Pass_Total) управляется KEY:LEFT/RIGHT — SUBSEL не нужен
     char uart_cmd[24];
+    if (row == 4) {
+        uart_cmd[0] = '\0';
+    } else
     switch (s_last_mode) {
         case MODE_FEED:
         case MODE_AFEED:  snprintf(uart_cmd, sizeof(uart_cmd), "SUBSEL:AP");   break;
@@ -2944,6 +2991,12 @@ static void sub_edit_step(bool up)
     g_sub_edit.last_ms = millis();
     int delta = up ? 1 : -1;
     char buf[32];
+
+    // row4 = Pass_Total: UP → KEY:RIGHT (increase), DN → KEY:LEFT (decrease)
+    if (g_sub_edit.row == 4) {
+        uart_protocol.sendButtonPress(up ? "KEY:RIGHT" : "KEY:LEFT");
+        return;
+    }
 
     switch (s_last_mode) {
         case MODE_FEED:
@@ -3300,11 +3353,17 @@ static void update_ui_values(const LatheData& data)
     if (g_ui.row4_val) {
         switch (data.mode) {
             case MODE_THREAD:
-                // M3: row4 = ЦИКЛОВ — одно число (как старый LCD: остаток для Int/Ext, total для Man)
-                if (data.thread_cycles > 0)
-                    snprintf(buf, sizeof(buf), "%d", data.thread_cycles);
-                else
+                // M3: ЦИКЛОВ — total/pass_nr (как M1/M2), для Man — только total
+                if (data.thread_cycles > 0) {
+                    if (data.submode != SUBMODE_MANUAL) {
+                        snprintf(buf, sizeof(buf), "#00ff88 %d#/#ffcc00 %d#",
+                                 (int)data.thread_cycles, (int)data.pass_nr);
+                    } else {
+                        snprintf(buf, sizeof(buf), "%d", (int)data.thread_cycles);
+                    }
+                } else {
                     snprintf(buf, sizeof(buf), "--");
+                }
                 lv_label_set_text(g_ui.row4_val, buf);
                 break;
             case MODE_FEED:
@@ -3319,11 +3378,11 @@ static void update_ui_values(const LatheData& data)
                 lv_label_set_text(g_ui.row4_val, buf);
                 break;
             case MODE_SPHERE:
-                // Остаток = Pass_Total_Sphr + 2 - Pass_Nr (как на старом LCD)
+                // M6: ЗАХОДОВ — total/pass_nr (как M1/M2); total = Pass_Total_Sphr + 2
                 if (data.pass_total_sphr > 0) {
-                    int rem = (int)data.pass_total_sphr + 2 - (int)data.pass_nr;
-                    if (rem < 0) rem = 0;
-                    snprintf(buf, sizeof(buf), "#00ff88 %d#", rem);
+                    int sphr_total = (int)data.pass_total_sphr + 2;
+                    snprintf(buf, sizeof(buf), "#00ff88 %d#/#ffcc00 %d#",
+                             sphr_total, (int)data.pass_nr);
                 } else {
                     snprintf(buf, sizeof(buf), "--");
                 }

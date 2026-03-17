@@ -1155,6 +1155,7 @@ void Switch_Sphere()
    Km_Count = 0;
    Repeat_Count = 0;
    Pass_Total_Sphr = 1;
+   Sphere();  // пересчитать Pass_Total_Sphr до отправки на дисплей
    Ap = 0;
    SelectMenu = 1;
    McStep_Lag= 0;

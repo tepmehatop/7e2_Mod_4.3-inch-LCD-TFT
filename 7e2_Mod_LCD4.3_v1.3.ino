@@ -257,11 +257,11 @@ static_assert(CHECK_MAX_aFEED_X > 1, "Неверно задано значени
 // === LCD через I2C ===
 // Библиотека: LCDI2C_Multilingual от locple (поддержка русского языка!)
 // GitHub: https://github.com/locple/LCDI2C_Multilingual
-// Подключение: SDA = Pin 20, SCL = Pin 21
+// Подключение: SDA = Pin 11, SCL = Pin 12 (bit-bang I2C, пины 20/21 освобождены под энкодер шпинделя)
 // Адрес I2C: 0x27 (если не работает - попробуйте 0x3F)
 #include <LCDI2C_Multilingual.h>
-LCDI2C_Russian lcd(0x27, 20, 4);  // класс для русского языка, (адрес, столбцы, строки)
-// LCDI2C_Russian lcd(0x3F, 20, 4);  // класс для русского языка, (адрес, столбцы, строки)
+LCDI2C_Russian lcd(0x27, 20, 4, 11, 12);  // класс для русского языка, (адрес, столбцы, строки, SDA, SCL)
+// LCDI2C_Russian lcd(0x3F, 20, 4, 11, 12);  // класс для русского языка, (адрес, столбцы, строки, SDA, SCL)
 
 char LCD_Row_1[21];
 char LCD_Row_2[21];
@@ -827,7 +827,7 @@ void setup()
   Serial_Emulation_Init();  // Инициализация эмуляции кнопок через Serial Monitor
   // =========================================================================
 
-  // ========== НОВЫЙ ДИСПЛЕЙ ESP32-S3 (Serial1, Pin18=TX, Pin19=RX) =========
+  // ========== НОВЫЙ ДИСПЛЕЙ ESP32-S3 (SoftwareSerial Pin51=TX, Pin52=RX, 57600) =========
   Display_UART_Init();
   // =========================================================================
 

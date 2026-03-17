@@ -1,0 +1,47 @@
+// МИНИМАЛЬНЫЙ ТЕСТ - определить где зависает прошивка
+
+#include <LCDI2C_Multilingual.h>
+
+LCDI2C_Russian lcd(0x27, 20, 4);
+
+void setup() {
+  // ===== ТЕСТ 1: Serial работает? =====
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("===== СТАРТ ТЕСТА =====");
+  Serial.println("Тест 1: Serial работает!");
+
+  // ===== ТЕСТ 2: LCD init =====
+  Serial.println("Тест 2: Начинаем lcd.init()...");
+  lcd.init();
+  Serial.println("Тест 2: lcd.init() завершен!");
+
+  // ===== ТЕСТ 3: LCD backlight =====
+  Serial.println("Тест 3: Начинаем lcd.backlight()...");
+  lcd.backlight();
+  Serial.println("Тест 3: lcd.backlight() завершен!");
+
+  // ===== ТЕСТ 4: LCD setCursor =====
+  Serial.println("Тест 4: Начинаем lcd.setCursor(0,0)...");
+  lcd.setCursor(0, 0);
+  Serial.println("Тест 4: lcd.setCursor() завершен!");
+
+  // ===== ТЕСТ 5: LCD print =====
+  Serial.println("Тест 5: Начинаем lcd.print()...");
+  lcd.print("Test 123");
+  Serial.println("Тест 5: lcd.print() завершен!");
+
+  // ===== ТЕСТ 6: Русский текст =====
+  Serial.println("Тест 6: Начинаем русский текст...");
+  lcd.setCursor(0, 1);
+  lcd.print("Привет мир!");
+  Serial.println("Тест 6: Русский текст завершен!");
+
+  Serial.println("===== ВСЕ ТЕСТЫ ПРОЙДЕНЫ! =====");
+  Serial.println("Если вы видите это - всё работает!");
+}
+
+void loop() {
+  // Ничего не делаем
+  delay(1000);
+}
