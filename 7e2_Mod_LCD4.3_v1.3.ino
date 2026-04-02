@@ -1,14 +1,18 @@
                                                    // ***** ПАРАМЕТРЫ ЖЕЛЕЗА ***** //
 
-// ============================================================
-// ИНТЕГРАЦИЯ HS800-2 DRO (цифровые линейки)
-// Раскомментируй строку ниже чтобы использовать позиции с
-// цифровых линеек HS800-2 вместо шаговых двигателей.
-// Подключение: HS800-2 STM32 TX → Mega pin 15 (RX3), GND → GND
-// Подробнее: WIRING.md и DRO_HS800.ino
-// ============================================================
-// #define USE_DRO_HS800
-// ============================================================
+// ── DRO HS800-2 (раскомментируй чтобы включить) ──────────────────────────────
+#define USE_DRO_HS800
+// Подключение: HS800-2 STM32 TX → Mega pin 17 (RX2), GND → GND
+// Подробнее: DRO_HS800.ino
+// ─────────────────────────────────────────────────────────────────────────────
+#ifdef USE_DRO_HS800
+extern int32_t dro_pos_x;
+extern int32_t dro_pos_y;
+extern bool    dro_btn_new;
+extern uint8_t dro_btn_b18;
+extern uint8_t dro_btn_b19;
+#endif
+// ─────────────────────────────────────────────────────────────────────────────
 
 #define ENC_LINE_PER_REV     1800     // Кол-во линий энкодера на 1 оборот шпинделя 
 #define MOTOR_Z_STEP_PER_REV 200     // Кол-во шагов двигателя на оборот винта Z, продольная (200 для ШД с шагом 1,8 градуса)
@@ -841,11 +845,9 @@ void setup()
   Display_UART_Init();
   // =========================================================================
 
-  // ========== DRO HS800-2 (Serial3 pin15=RX3, только если USE_DRO_HS800) =========
 #ifdef USE_DRO_HS800
   DRO_Init();
 #endif
-  // ===============================================================================
 
   _delay_ms(500);
 
@@ -1048,10 +1050,6 @@ void loop()
   if (millis() - s_disp_ping_timer >= 10000) {
     s_disp_ping_timer = millis();
     Display_Send_CMD("PING", nullptr);
-#ifdef USE_DRO_HS800
-    // Отправляем статус DRO на дисплей (1=подключён, 0=нет связи)
-    Display_Send_Int("DRO_OK", DRO_IsConnected() ? 1 : 0);
-#endif
   }
   // =========================================================================
 
@@ -1063,38 +1061,23 @@ void loop()
   // Read_Keypad4x4();  // ОТКЛЮЧЕНО - не работает
   // ==========================================
 
-  // ========== DRO HS800-2: обработка пакетов ==========
-#ifdef USE_DRO_HS800
-  DRO_Process();
-#endif
-  // =====================================================
-
   Spindle();
   Read_ADC_Feed();
   if (KEYB_TIMER_FLAG != 0) Menu();
-  if (Mode == Mode_Divider) Print();
-
-  // ========== ИСТОЧНИК ПОЗИЦИЙ: шаговые двигатели ИЛИ цифровые линейки HS800-2 ==========
+  if (Mode == Mode_Divider) Print(); 
+ 
 #ifdef USE_DRO_HS800
-  // --- ЦИФРОВЫЕ ЛИНЕЙКИ (HS800-2) ---
-  // dro_pos_x/y в 0.001мм → Size_X/Z_mm в 0.01мм (делим на 10)
-  // HS800-2 X → гитара X (суппорт поперечный)
-  // HS800-2 Y → гитара Z (каретка продольная)
-  // Примечание: OTSKOK и TENSION по-прежнему считаются от шаговых,
-  // так как отскок — механическая компенсация, не зависящая от DRO.
-  Size_X_mm  = dro_pos_x / 10L;
+  DRO_Process();
+  Size_X_mm  = dro_pos_x / 10L;   // 0.001мм → 0.01мм
   Size_Z_mm  = dro_pos_y / 10L;
-  MSize_X_mm = dro_pos_x / 5L;   // диаметр = 2 × |pos_x|, в 0.01мм
+  MSize_X_mm = dro_pos_x / 5L;    // диаметр = 2× |X|
 #else
-  // --- ШАГОВЫЕ ДВИГАТЕЛИ (оригинальный расчёт) ---
-  MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);   //перерасчёт в миллиметры диаметр заготовки
-  Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);   //перерасчёт в миллиметры X
-  Size_Z_mm  = Z_pos  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z     * McSTEP_Z);   //перерасчёт в миллиметры Z
+  MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);
+  Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);
+  Size_Z_mm  = Z_pos  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z     * McSTEP_Z);
 #endif
-  // Отскок и натяг всегда от шаговых (аппаратная компенсация люфта)
-  OTSKOK_Z_mm  = OTSKOK_Z  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);  //перерасчёт в миллиметры отскок
-  TENSION_Z_mm = TENSION_Z / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);  //перерасчёт в миллиметры натяг
-  // =======================================================================================
+  OTSKOK_Z_mm  = OTSKOK_Z  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);
+  TENSION_Z_mm = TENSION_Z / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);
   
   Spindle_Angle = Enc_Pos * 360000 / ENC_TICK;
   Required_Angle = 360000 * (Current_Tooth - 1) / Total_Tooth;

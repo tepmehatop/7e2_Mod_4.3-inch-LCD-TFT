@@ -281,6 +281,10 @@ void Display_Send_All()
   // 20. Коническая резьба флаг (для M4/M5 SM=2)
   Display_Send_Int("CONE_THR", (ConL_Thr_flag || ConR_Thr_flag) ? 1 : 0);
 
+  // 22. Ширина резца и шаг оси Z (для M6 SM=2)
+  Display_Send_Int("CUTTER_W", Cutter_Width);
+  Display_Send_Int("CUTTING_W", Cutting_Width);
+
   // 21. Состояние лимитов (L,R,F,B)
   {
     char buf[12];
@@ -309,6 +313,7 @@ void Display_On_Mode_Change()
 {
   Display_Send_Int("MODE", (int)Mode);
   Display_Send_Int("SUBMODE", _Display_GetSubMode());
+  Display_Send_Int("SELECTMENU", SelectMenu);
 }
 
 void Display_On_SubMode_Change()

@@ -1459,11 +1459,12 @@ void Key_Select_Pressed()
             Display_On_SelectMenu_Change();
          break;         
 
-         case Mode_Sphere: 
+         case Mode_Sphere:
             if      (SelectMenu == 1) SelectMenu = 2;
             else if (SelectMenu == 2) SelectMenu = 3;
-            else if (SelectMenu == 3) SelectMenu = 1;            
+            else if (SelectMenu == 3) SelectMenu = 1;
             Beep();
+            Display_On_SelectMenu_Change();
          break;
          
          case Mode_Reserve:
