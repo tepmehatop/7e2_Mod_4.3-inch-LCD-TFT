@@ -1068,11 +1068,18 @@ void loop()
  
 #ifdef USE_DRO_HS800
   DRO_Process();
-  // Print.ino показывает минус когда переменная ПОЛОЖИТЕЛЬНАЯ (инвертированная логика).
-  // Инвертируем оба знака чтобы на LCD отображалось то же что на HS800-2.
-  Size_X_mm  = -(dro_pos_x / 10L);
-  Size_Z_mm  = -(dro_pos_y / 10L);
-  MSize_X_mm = -(dro_pos_x / 5L);
+  {
+    // Print.ino показывает минус когда переменная ПОЛОЖИТЕЛЬНАЯ (инвертированная логика).
+    // Инвертируем оба знака чтобы на LCD и ESP32 отображалось то же что на HS800-2.
+    int32_t new_x = -(dro_pos_x / 10L);
+    int32_t new_z = -(dro_pos_y / 10L);
+    if (new_x != Size_X_mm || new_z != Size_Z_mm) {
+      Size_X_mm  = new_x;
+      Size_Z_mm  = new_z;
+      MSize_X_mm = -(dro_pos_x / 5L);
+      Display_On_Position_Change();
+    }
+  }
 #else
   MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);
   Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);
