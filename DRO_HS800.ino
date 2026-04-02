@@ -53,8 +53,10 @@ static void _handle(const uint8_t* p, uint8_t len) {
         return;
     }
 
-    dro_pos_x = (int32_t)(int16_t)(p[6]  | ((uint16_t)p[7]  << 8)) * DRO_X_SIGN;
-    dro_pos_y = (int32_t)(int16_t)(p[10] | ((uint16_t)p[11] << 8)) * DRO_Y_SIGN;
+    // Позиции закодированы как int32 LE (4 байта): bytes[6..9]=X, bytes[10..13]=Y
+    // int16 давал переполнение при значениях > 32.767мм
+    dro_pos_x = (int32_t)((uint32_t)p[6]  | ((uint32_t)p[7]  << 8) | ((uint32_t)p[8]  << 16) | ((uint32_t)p[9]  << 24)) * DRO_X_SIGN;
+    dro_pos_y = (int32_t)((uint32_t)p[10] | ((uint32_t)p[11] << 8) | ((uint32_t)p[12] << 16) | ((uint32_t)p[13] << 24)) * DRO_Y_SIGN;
 
     uint8_t b18 = p[18], b19 = p[19];
     if ((b18 || b19) && (b18 != dro_btn_b18 || b19 != dro_btn_b19)) {

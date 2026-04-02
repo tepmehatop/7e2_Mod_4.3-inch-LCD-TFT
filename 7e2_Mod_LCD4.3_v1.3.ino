@@ -1068,9 +1068,11 @@ void loop()
  
 #ifdef USE_DRO_HS800
   DRO_Process();
-  Size_X_mm  = dro_pos_x / 10L;    // 0.001мм → 0.01мм, знак прямой
-  Size_Z_mm  = -(dro_pos_y / 10L); // Print.ino инвертирует знак Z — компенсируем
-  MSize_X_mm = dro_pos_x / 5L;
+  // Print.ino показывает минус когда переменная ПОЛОЖИТЕЛЬНАЯ (инвертированная логика).
+  // Инвертируем оба знака чтобы на LCD отображалось то же что на HS800-2.
+  Size_X_mm  = -(dro_pos_x / 10L);
+  Size_Z_mm  = -(dro_pos_y / 10L);
+  MSize_X_mm = -(dro_pos_x / 5L);
 #else
   MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);
   Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);
