@@ -1068,9 +1068,9 @@ void loop()
  
 #ifdef USE_DRO_HS800
   DRO_Process();
-  Size_X_mm  = dro_pos_x / 10L;   // 0.001мм → 0.01мм
-  Size_Z_mm  = dro_pos_y / 10L;
-  MSize_X_mm = dro_pos_x / 5L;    // диаметр = 2× |X|
+  Size_X_mm  = dro_pos_x / 10L;    // 0.001мм → 0.01мм, знак прямой
+  Size_Z_mm  = -(dro_pos_y / 10L); // Print.ino инвертирует знак Z — компенсируем
+  MSize_X_mm = dro_pos_x / 5L;
 #else
   MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);
   Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);

@@ -74,9 +74,9 @@ void Print()
          lcd.print(LCD_Row_7);
          lcd.print("мм");  
          lcd.setCursor(0, 2);
-         if (X_pos <= 0)
+         if (Size_X_mm >= 0)
          lcd.print("Ocь X:  \3   ");
-         else 
+         else
          lcd.print("Ocь X:  \3  -");
          snprintf(LCD_Row_1, 7, "%3ld.%02d", abs(Size_X_mm/100), abs(Size_X_mm%100));
          lcd.print(LCD_Row_1);
