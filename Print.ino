@@ -83,9 +83,9 @@ void Print()
          lcd.print("мм");         
          lcd.setCursor(0, 3);
          if (Size_Z_mm <= 0)
-         lcd.print("Ocь Z:  \4   ");
-         else 
-         lcd.print("Ocь Z:  \4  -");
+         lcd.print("Ocь Y:  \4   ");
+         else
+         lcd.print("Ocь Y:  \4  -");
          snprintf(LCD_Row_2, 7, "%3ld.%02d", abs(Size_Z_mm/100), abs(Size_Z_mm%100));
          lcd.print(LCD_Row_2); 
          lcd.print("мм"); 
@@ -117,9 +117,9 @@ void Print()
                   
          lcd.setCursor(0, 3);
          if (Size_Z_mm <= 0)
-         snprintf(LCD_Row_5, 20, "Z %2ld.%02d", abs(Size_Z_mm/100), abs(Size_Z_mm%100));
-         else 
-         snprintf(LCD_Row_5, 20, "Z-%2ld.%02d", abs(Size_Z_mm/100), abs(Size_Z_mm%100));
+         snprintf(LCD_Row_5, 20, "Y %2ld.%02d", abs(Size_Z_mm/100), abs(Size_Z_mm%100));
+         else
+         snprintf(LCD_Row_5, 20, "Y-%2ld.%02d", abs(Size_Z_mm/100), abs(Size_Z_mm%100));
          lcd.print(LCD_Row_5);
          lcd.print(" "); 
    }
@@ -279,7 +279,7 @@ void Print()
          }
               else if (SelectMenu == 3){
               lcd.setCursor(0, 0);
-              lcd.print("Отскок Z: \1\2");
+              lcd.print("Отскок Y: \1\2");
               snprintf(LCD_Row_5, 16, " %2ld.%02dmm", abs(OTSKOK_Z_mm/100), abs(OTSKOK_Z_mm%100));
               lcd.print(LCD_Row_5);  
               lcd.setCursor(0, 1);
@@ -287,7 +287,7 @@ void Print()
               lcd.setCursor(0, 2);
               lcd.print("Ослабление \3        ");
               lcd.setCursor(0, 3);
-              lcd.print("натяга Z:  \4"); 
+              lcd.print("натяга Y:  \4");
               snprintf(LCD_Row_6, 16, " %2ld.%02dmm", abs(TENSION_Z_mm/100), abs(TENSION_Z_mm%100));
               lcd.print(LCD_Row_6);
      }
@@ -548,7 +548,7 @@ void Print()
          lcd.print(LCD_Row_1);
          lcd.print("мм");
          lcd.setCursor(0, 1);
-         lcd.print("Шaг по ocи Z: ");
+         lcd.print("Шaг по ocи Y: ");
          snprintf(LCD_Row_2, 5, "%1d.%02d", Cutting_Width/100, Cutting_Width%100);
          lcd.print(LCD_Row_2);
          lcd.print("мм"); 
