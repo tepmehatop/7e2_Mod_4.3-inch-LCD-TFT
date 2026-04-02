@@ -100,8 +100,8 @@ void UartProtocol::parseCommand(const char* cmd)
     else if (strcmp(command, "THREAD") == 0) {
         parseThread(params);
     }
-    else if (strcmp(command, "POS_Z") == 0 || strcmp(command, "POS_Y") == 0) {
-        parsePosY(params);
+    else if (strcmp(command, "POS_Z") == 0) {
+        parsePosZ(params);
     }
     else if (strcmp(command, "POS_X") == 0) {
         parsePosX(params);
@@ -172,11 +172,11 @@ void UartProtocol::parseCommand(const char* cmd)
     else if (strcmp(command, "SELECTMENU") == 0) {
         parseSelectMenu(params);
     }
-    else if (strcmp(command, "OTSKOK_Z") == 0 || strcmp(command, "OTSKOK_Y") == 0) {
-        parseOtskokY(params);
+    else if (strcmp(command, "OTSKOK_Z") == 0) {
+        parseOtskokZ(params);
     }
-    else if (strcmp(command, "TENSION_Z") == 0 || strcmp(command, "TENSION_Y") == 0) {
-        parseTensionY(params);
+    else if (strcmp(command, "TENSION_Z") == 0) {
+        parseTensionZ(params);
     }
     else if (strcmp(command, "DIAM_X") == 0) {
         parseDiamX(params);
@@ -186,6 +186,12 @@ void UartProtocol::parseCommand(const char* cmd)
     }
     else if (strcmp(command, "CONE_THR") == 0) {
         parseConeThr(params);
+    }
+    else if (strcmp(command, "CUTTER_W") == 0) {
+        parseCutterW(params);
+    }
+    else if (strcmp(command, "CUTTING_W") == 0) {
+        parseCuttingW(params);
     }
 }
 
@@ -235,9 +241,9 @@ void UartProtocol::parseThread(const char* params)
     }
 }
 
-void UartProtocol::parsePosY(const char* params)
+void UartProtocol::parsePosZ(const char* params)
 {
-    data_.pos_y = atol(params);
+    data_.pos_z = atol(params);
     if (data_update_callback_) {
         data_update_callback_(data_);
     }
@@ -474,15 +480,15 @@ void UartProtocol::parseSelectMenu(const char* params)
     }
 }
 
-void UartProtocol::parseOtskokY(const char* params)
+void UartProtocol::parseOtskokZ(const char* params)
 {
-    data_.otskok_y = (int32_t)atol(params);
+    data_.otskok_z = (int32_t)atol(params);
     if (data_update_callback_) data_update_callback_(data_);
 }
 
-void UartProtocol::parseTensionY(const char* params)
+void UartProtocol::parseTensionZ(const char* params)
 {
-    data_.tension_y = (int32_t)atol(params);
+    data_.tension_z = (int32_t)atol(params);
     if (data_update_callback_) data_update_callback_(data_);
 }
 
@@ -501,6 +507,18 @@ void UartProtocol::parsePassFin(const char* params)
 void UartProtocol::parseConeThr(const char* params)
 {
     data_.cone_thr = (atoi(params) != 0);
+    if (data_update_callback_) data_update_callback_(data_);
+}
+
+void UartProtocol::parseCutterW(const char* params)
+{
+    data_.cutter_w = (int16_t)atoi(params);
+    if (data_update_callback_) data_update_callback_(data_);
+}
+
+void UartProtocol::parseCuttingW(const char* params)
+{
+    data_.cutting_w = (int16_t)atoi(params);
     if (data_update_callback_) data_update_callback_(data_);
 }
 

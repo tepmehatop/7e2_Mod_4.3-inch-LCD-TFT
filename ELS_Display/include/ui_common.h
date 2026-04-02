@@ -105,7 +105,7 @@ private:
     lv_obj_t* starts_row_;
     lv_obj_t* pitch_row_;
 
-    lv_obj_t* pos_z_row_;
+    lv_obj_t* pos_y_row_;
     lv_obj_t* pos_x_row_;
     lv_obj_t* diameter_row_;
     lv_obj_t* limits_row1_;

@@ -79,6 +79,8 @@ typedef struct {
     int32_t  diam_x;         // M1 SM=2: диаметр заготовки (MSize_X_mm * 10)
     uint8_t  pass_fin;       // M3 SM=2: чистовых проходов (PASS_FINISH + Pass_Fin)
     bool     cone_thr;       // M4/M5 SM=2: коническая резьба включена
+    int16_t  cutter_w;      // M6 SM=2: ширина резца (мм × 100)
+    int16_t  cutting_w;     // M6 SM=2: шаг по оси Z (мм × 100)
 
     char     thread_name[8]; // Резьба: строка из Thread_Print (напр. "1.50mm", " 8tpi ", "G  1/8")
     int16_t  rpm_limit;      // Резьба: макс. обороты для текущего шага (Об/мин)
@@ -231,6 +233,8 @@ private:
     void parseDiamX(const char* params);        // <DIAM_X:N>         → diam_x=N
     void parsePassFin(const char* params);      // <PASS_FIN:N>       → pass_fin=N
     void parseConeThr(const char* params);      // <CONE_THR:0|1>     → cone_thr
+    void parseCutterW(const char* params);      // <CUTTER_W:N>       → cutter_w
+    void parseCuttingW(const char* params);     // <CUTTING_W:N>      → cutting_w
 
     // Отправка команды
     void sendCommand(const char* cmd, const char* params = nullptr);

@@ -844,7 +844,6 @@ void setup()
   // ========== НОВЫЙ ДИСПЛЕЙ ESP32-S3 (SoftwareSerial Pin51=TX, Pin52=RX, 57600) =========
   Display_UART_Init();
   // =========================================================================
-
 #ifdef USE_DRO_HS800
   DRO_Init();
 #endif
@@ -1081,12 +1080,12 @@ void loop()
     }
   }
 #else
-  MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);
-  Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);
-  Size_Z_mm  = Z_pos  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z     * McSTEP_Z);
+  MSize_X_mm = MX_pos / ((float)MOTOR_X_STEP_PER_REV / SCREW_X / 2 * McSTEP_X);   //перерасчёт в миллиметры диаметр заготовки
+  Size_X_mm  = X_pos  / ((float)MOTOR_X_STEP_PER_REV / SCREW_X     * McSTEP_X);   //перерасчёт в миллиметры X
+  Size_Z_mm  = Z_pos  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z     * McSTEP_Z);   //перерасчёт в миллиметры Z
 #endif
-  OTSKOK_Z_mm  = OTSKOK_Z  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);
-  TENSION_Z_mm = TENSION_Z / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);
+  OTSKOK_Z_mm  = OTSKOK_Z  / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);  //перерасчёт в миллиметры отскок
+  TENSION_Z_mm = TENSION_Z / ((float)MOTOR_Z_STEP_PER_REV / SCREW_Z * McSTEP_Z);  //перерасчёт в миллиметры натяг
   
   Spindle_Angle = Enc_Pos * 360000 / ENC_TICK;
   Required_Angle = 360000 * (Current_Tooth - 1) / Total_Tooth;
