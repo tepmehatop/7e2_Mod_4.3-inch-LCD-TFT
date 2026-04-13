@@ -82,7 +82,7 @@ void UartProtocol::parseCommand(const char* cmd)
     const char* command = buffer;
     const char* params = colon + 1;
 
-    Serial.printf("UART RX: <%s:%s>\n", command, params);
+    // Serial.printf("UART RX: <%s:%s>\n", command, params);
 
     // Обработка команд
     if (strcmp(command, "MODE") == 0) {
