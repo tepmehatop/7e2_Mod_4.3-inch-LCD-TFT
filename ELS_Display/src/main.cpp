@@ -4394,10 +4394,20 @@ static void test_stop()
 // Callback for UART data
 // ============================================================================
 
+// Флаг: пришли новые данные (не pos/rpm) — нужен полный перерендер UI.
+// Устанавливается onDataUpdate(), сбрасывается в loop() после update_ui_values().
+// Цель: при burst-пакетах (thread mode: 8+ команд за 1 вызов process())
+// вызывать update_ui_values() один раз, а не 8 раз подряд.
+static bool s_ui_dirty = false;
+
 void onDataUpdate(const LatheData& data)
 {
-    // Serial.printf убран — блокировал USB CDC если монитор не подключён
-    update_ui_values(data);
+    // НЕ вызываем update_ui_values() здесь напрямую — это вызовет 1000+ LVGL-операций
+    // на каждую UART-команду в burst (thread mode: FEED, THREAD_NAME, AP, PH, PASS,
+    // RPM_LIM, THREAD_CYCL, THREAD_TRAVEL — 8 команд = 8× 1000 оп = зависон).
+    // Вместо этого ставим флаг — loop() вызовет update_ui_values() один раз после process().
+    (void)data;  // данные берём через uart_protocol.getData() в loop()
+    s_ui_dirty = true;
 }
 
 // ============================================================================
@@ -4587,6 +4597,13 @@ void loop()
 {
     // Process UART commands
     uart_protocol.process();
+
+    // UI dirty: вызываем update_ui_values() ОДИН РАЗ за итерацию loop(),
+    // даже если в этой итерации пришло несколько UART-команд (burst в thread mode).
+    if (s_ui_dirty) {
+        s_ui_dirty = false;
+        update_ui_values(uart_protocol.getData());
+    }
 
     // Позиции/RPM: вызываем update_pos_rpm_labels сразу при pos_dirty.
     // Таймер не нужен — функция сама пропускает вызовы LVGL если значения не изменились.
