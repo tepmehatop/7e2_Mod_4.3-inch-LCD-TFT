@@ -4600,14 +4600,22 @@ void loop()
 
     // UI dirty: вызываем update_ui_values() ОДИН РАЗ за итерацию loop(),
     // даже если в этой итерации пришло несколько UART-команд (burst в thread mode).
-    if (s_ui_dirty) {
-        s_ui_dirty = false;
-        update_ui_values(uart_protocol.getData());
+    // Также: периодический таймер 300мс — гарантирует рендер даже если нет non-pos команд
+    // (старт системы, сабменю, стабилизация AP и других параметров).
+    {
+        static uint32_t s_ui_refresh_t = 0;
+        uint32_t now = millis();
+        if (s_ui_dirty || (now - s_ui_refresh_t) >= 300) {
+            s_ui_dirty = false;
+            s_ui_refresh_t = now;
+            update_ui_values(uart_protocol.getData());
+        }
     }
 
     // Позиции/RPM: вызываем update_pos_rpm_labels сразу при pos_dirty.
-    // Таймер не нужен — функция сама пропускает вызовы LVGL если значения не изменились.
-    // Так исключается фрагментация heap от lv_label_set_text и лишние lv_obj_set_style.
+    // Функция сама пропускает вызовы LVGL если значения не изменились.
+    // update_pos_rpm_labels работает только при select_menu==1;
+    // в сабменю позиции обновляются через update_ui_values по таймеру выше.
     if (uart_protocol.isPosDirty()) {
         uart_protocol.clearPosDirty();
         update_pos_rpm_labels(uart_protocol.getData());
