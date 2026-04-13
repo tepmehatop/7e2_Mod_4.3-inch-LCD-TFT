@@ -4598,7 +4598,11 @@ void loop()
     // Демо-режим (тройное нажатие OK)
     if (g_demo_active) demo_tick();
 
-    // Update LVGL tick (critical!)
+    // Update LVGL tick + реальная задержка чтобы тик совпадал с реальным временем.
+    // Без delay(): lv_tick_inc(5) вызывается сотни раз в сек → LVGL неправильно
+    // считает интервалы → тач читается слишком редко, события теряются.
+    // delay(5) также даёт FreeRTOS/WiFi task CPU время → нет бурстов.
+    delay(5);
     lv_tick_inc(5);
 
     // Process LVGL
