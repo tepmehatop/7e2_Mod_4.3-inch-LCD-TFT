@@ -4336,13 +4336,10 @@ static void test_stop()
 // Callback for UART data
 // ============================================================================
 
-static bool s_ui_dirty = false;
-
-void onDataUpdate(const LatheData& /*data*/)
+void onDataUpdate(const LatheData& data)
 {
-    // Не вызываем update_ui_values() здесь — это полный LVGL ре-рендер на каждую команду.
-    // Вместо этого ставим флаг, loop() обновит UI один раз после обработки всех команд.
-    s_ui_dirty = true;
+    // Serial.printf убран — блокировал USB CDC если монитор не подключён
+    update_ui_values(data);
 }
 
 // ============================================================================
@@ -4532,12 +4529,6 @@ void loop()
 {
     // Process UART commands
     uart_protocol.process();
-
-    // Обновить UI один раз после обработки всех пришедших команд
-    if (s_ui_dirty) {
-        s_ui_dirty = false;
-        update_ui_values(uart_protocol.getData());
-    }
 
     // Авто-выход из режима редактирования через 5 секунд бездействия
     if (g_edit_param.active && (millis() - g_edit_param.last_ms > 5000)) {
