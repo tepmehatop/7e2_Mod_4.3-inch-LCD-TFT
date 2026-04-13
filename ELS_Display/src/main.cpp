@@ -2755,7 +2755,7 @@ static void enter_edit_mode()
         lv_obj_set_style_pad_hor(g_ui.primary_val, 8, 0);
     }
 
-    Serial.println("Edit mode: ON  (UP=KEY:UP, OK=PARAM_OK, DN=KEY:DN)");
+    // Serial.println("Edit mode: ON");
 }
 
 static void exit_edit_mode()
@@ -2806,7 +2806,7 @@ static void exit_edit_mode()
         lv_obj_set_style_pad_hor(g_ui.primary_val, 0, 0);
     }
 
-    Serial.println("Edit mode: OFF");
+    // Serial.println("Edit mode: OFF");
 }
 
 // ============================================================================
@@ -2818,7 +2818,7 @@ static void show_thr_type_menu()
     if (!g_ui.thr_type_menu) return;
     lv_obj_clear_flag(g_ui.thr_type_menu, LV_OBJ_FLAG_HIDDEN);
     lv_obj_move_foreground(g_ui.thr_type_menu);
-    Serial.println("Thread type menu: OPEN");
+    // Serial.println("Thread type menu: OPEN");
 }
 
 // ============================================================================
@@ -2838,7 +2838,7 @@ static void show_joystick_overlay()
     g_joystick.last_ms = millis();
     lv_obj_clear_flag(g_ui.joystick_overlay, LV_OBJ_FLAG_HIDDEN);
     lv_obj_move_foreground(g_ui.joystick_overlay);
-    Serial.println("Joystick overlay: OPEN");
+    // Serial.println("Joystick overlay: OPEN");
 }
 
 static void hide_joystick_overlay()
@@ -2851,7 +2851,7 @@ static void hide_joystick_overlay()
     }
     g_joystick.active = false;
     lv_obj_add_flag(g_ui.joystick_overlay, LV_OBJ_FLAG_HIDDEN);
-    Serial.println("Joystick overlay: CLOSE");
+    // Serial.println("Joystick overlay: CLOSE");
 }
 
 // Прыжок к первой записи типа резьбы: входит в edit mode, обновляет дисплей
@@ -2891,7 +2891,7 @@ static void jump_to_thread_type(int first_idx)
 
     update_thread_type_indicators(lbl);
 
-    Serial.printf("Thread type jump: idx=%d label=%s\n", first_idx, lbl);
+    // Serial.printf("Thread type jump: ...");
 }
 
 // ============================================================================
@@ -3004,7 +3004,7 @@ static void enter_sub_edit(int row)
     }
     if (uart_cmd[0]) uart_protocol.sendButtonPress(uart_cmd);
 
-    Serial.printf("SubEdit: row=%d mode=%d\n", row, (int)s_last_mode);
+    // Serial.printf("SubEdit: row=%d ...");
 }
 
 static void exit_sub_edit()
@@ -3013,7 +3013,7 @@ static void exit_sub_edit()
     highlight_sub_edit_row(g_sub_edit.row, false);
     g_sub_edit.active = false;
     g_sub_edit.row    = -1;
-    Serial.println("SubEdit: OFF");
+    // Serial.println("SubEdit: OFF");
 }
 
 static void sub_edit_step(bool up)
@@ -3142,7 +3142,7 @@ static void show_alert(const char* message)
         lv_obj_set_style_shadow_width(g_ui.warn_bg, 8, 0);
         lv_obj_set_style_shadow_color(g_ui.warn_bg, lv_color_hex(0xff8800), 0);
     }
-    Serial.printf("Alert: %s\n", message);
+    // Serial.printf("Alert: ...");
 }
 
 static void dismiss_alert()

@@ -295,7 +295,7 @@ void UartProtocol::sendCommand(const char* cmd, const char* params)
     }
     serial_->println('>');
 
-    Serial.printf("UART TX: <%s%s%s>\n", cmd, params ? ":" : "", params ? params : "");
+    // Serial.printf("UART TX: <%s%s%s>\n", cmd, params ? ":" : "", params ? params : "");
 }
 
 void UartProtocol::sendButtonPress(const char* button_name)
