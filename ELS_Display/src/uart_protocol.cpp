@@ -32,6 +32,9 @@ UartProtocol::UartProtocol()
 void UartProtocol::begin(HardwareSerial& serial, uint32_t baud_rate)
 {
     serial_ = &serial;
+    // Увеличить RX буфер до 1024 байт: при медленном loop() предотвращает потерю данных.
+    // Default 256 байт при 57600 бод заполняется за ~44мс — мало при нагруженном LVGL.
+    serial_->setRxBufferSize(1024);
     serial_->begin(baud_rate, SERIAL_8N1, UART_RX_PIN, UART_TX_PIN);
 
     Serial.println("UART Protocol initialized");

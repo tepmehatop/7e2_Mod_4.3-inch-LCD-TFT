@@ -3245,37 +3245,61 @@ static void update_thread_type_indicators(const char* label)
 }
 
 // ============================================================================
-// Лёгкое обновление только позиций и RPM (~8 LVGL ops вместо 1012)
-// Вызывается из loop() по таймеру 150мс при pos_dirty флаге.
-// Полный update_ui_values() вызывается только при смене режима/параметров.
+// Лёгкое обновление только позиций и RPM.
+// КЛЮЧЕВОЕ: вызывает LVGL только когда значение реально изменилось.
+// lv_label_set_text каждые 100мс = аллокация/деаллокация строк → фрагментация
+// 48KB LVGL heap → прогрессивное замедление через минуты работы.
 // ============================================================================
 static void update_pos_rpm_labels(const LatheData& data)
 {
     if (!g_ui.secondary_val || !g_ui.row1_val || !g_ui.row2_val) return;
+
+    // Запоминаем последние отображённые значения — рендерим только при изменении
+    static int32_t s_last_pos_z  = INT32_MIN;
+    static int32_t s_last_pos_x  = INT32_MIN;
+    static int32_t s_last_rpm    = INT32_MIN;
+    static int8_t  s_last_sign_z = 0;
+    static int8_t  s_last_sign_x = 0;
+
     char buf[20];
 
-    // RPM — всегда отображается в secondary_val
-    snprintf(buf, sizeof(buf), "%d", data.rpm);
-    lv_label_set_text(g_ui.secondary_val, buf);
-    if (g_ui.secondary_val_glow) lv_label_set_text(g_ui.secondary_val_glow, buf);
-    if (g_ui.rpm_bar) lv_bar_set_value(g_ui.rpm_bar, data.rpm, LV_ANIM_OFF);
+    // RPM
+    if (data.rpm != s_last_rpm) {
+        s_last_rpm = data.rpm;
+        snprintf(buf, sizeof(buf), "%d", data.rpm);
+        lv_label_set_text(g_ui.secondary_val, buf);
+        if (g_ui.secondary_val_glow) lv_label_set_text(g_ui.secondary_val_glow, buf);
+        if (g_ui.rpm_bar) lv_bar_set_value(g_ui.rpm_bar, data.rpm, LV_ANIM_OFF);
+    }
 
-    // row1 и row2 показывают позиции только в SM=1 для большинства режимов.
-    // В SM=2, SM=3, MODE_DIVIDER — там другие данные, обновляемые через полный
-    // update_ui_values() при изменении параметров. Не трогаем их здесь.
     if (data.select_menu != 1) return;
     if (data.mode == MODE_DIVIDER) return;
 
-    // SM=1: row1=POS_Z, row2=POS_X для всех остальных режимов
-    DisplayFormatter::formatPosition(buf, data.pos_z);
-    lv_label_set_text(g_ui.row1_val, buf);
-    lv_obj_set_style_text_color(g_ui.row1_val,
-        data.pos_z >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+    // POS_Z
+    if (data.pos_z != s_last_pos_z) {
+        s_last_pos_z = data.pos_z;
+        int8_t sign_z = (data.pos_z >= 0) ? 1 : -1;
+        DisplayFormatter::formatPosition(buf, data.pos_z);
+        lv_label_set_text(g_ui.row1_val, buf);
+        if (sign_z != s_last_sign_z) {
+            s_last_sign_z = sign_z;
+            lv_obj_set_style_text_color(g_ui.row1_val,
+                sign_z > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+        }
+    }
 
-    DisplayFormatter::formatPosition(buf, data.pos_x);
-    lv_label_set_text(g_ui.row2_val, buf);
-    lv_obj_set_style_text_color(g_ui.row2_val,
-        data.pos_x >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+    // POS_X
+    if (data.pos_x != s_last_pos_x) {
+        s_last_pos_x = data.pos_x;
+        int8_t sign_x = (data.pos_x >= 0) ? 1 : -1;
+        DisplayFormatter::formatPosition(buf, data.pos_x);
+        lv_label_set_text(g_ui.row2_val, buf);
+        if (sign_x != s_last_sign_x) {
+            s_last_sign_x = sign_x;
+            lv_obj_set_style_text_color(g_ui.row2_val,
+                sign_x > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+        }
+    }
 }
 
 static void update_ui_values(const LatheData& data)
@@ -4564,16 +4588,12 @@ void loop()
     // Process UART commands
     uart_protocol.process();
 
-    // Позиции/RPM: лёгкий рендер (~8 LVGL ops) не чаще 1 раза в 100мс
-    // Полный update_ui_values вызывается только через onDataUpdate при смене
-    // режима/субменю/параметров (т.е. только когда реально что-то изменилось).
-    {
-        static uint32_t s_pos_render_t = 0;
-        if (uart_protocol.isPosDirty() && (millis() - s_pos_render_t) >= 100) {
-            s_pos_render_t = millis();
-            uart_protocol.clearPosDirty();
-            update_pos_rpm_labels(uart_protocol.getData());
-        }
+    // Позиции/RPM: вызываем update_pos_rpm_labels сразу при pos_dirty.
+    // Таймер не нужен — функция сама пропускает вызовы LVGL если значения не изменились.
+    // Так исключается фрагментация heap от lv_label_set_text и лишние lv_obj_set_style.
+    if (uart_protocol.isPosDirty()) {
+        uart_protocol.clearPosDirty();
+        update_pos_rpm_labels(uart_protocol.getData());
     }
 
     // Авто-выход из режима редактирования через 5 секунд бездействия
