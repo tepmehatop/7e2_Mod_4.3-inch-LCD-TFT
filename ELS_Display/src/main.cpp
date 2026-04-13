@@ -3252,9 +3252,10 @@ static void update_thread_type_indicators(const char* label)
 // ============================================================================
 static void update_pos_rpm_labels(const LatheData& data)
 {
-    if (!g_ui.secondary_val || !g_ui.row1_val || !g_ui.row2_val) return;
+    if (!g_ui.secondary_val) return;
 
-    // Запоминаем последние отображённые значения — рендерим только при изменении
+    // Запоминаем последние отображённые значения — рендерим только при изменении.
+    // Это предотвращает heap-фрагментацию от частых lv_label_set_text.
     static int32_t s_last_pos_z  = INT32_MIN;
     static int32_t s_last_pos_x  = INT32_MIN;
     static int32_t s_last_rpm    = INT32_MIN;
@@ -3263,7 +3264,7 @@ static void update_pos_rpm_labels(const LatheData& data)
 
     char buf[20];
 
-    // RPM
+    // RPM — всегда обновляем, без зависимости от select_menu
     if (data.rpm != s_last_rpm) {
         s_last_rpm = data.rpm;
         snprintf(buf, sizeof(buf), "%d", data.rpm);
@@ -3272,34 +3273,68 @@ static void update_pos_rpm_labels(const LatheData& data)
         if (g_ui.rpm_bar) lv_bar_set_value(g_ui.rpm_bar, data.rpm, LV_ANIM_OFF);
     }
 
-    if (data.select_menu != 1) return;
     if (data.mode == MODE_DIVIDER) return;
 
-    // POS_Z
-    if (data.pos_z != s_last_pos_z) {
-        s_last_pos_z = data.pos_z;
-        int8_t sign_z = (data.pos_z >= 0) ? 1 : -1;
-        DisplayFormatter::formatPosition(buf, data.pos_z);
-        lv_label_set_text(g_ui.row1_val, buf);
-        if (sign_z != s_last_sign_z) {
-            s_last_sign_z = sign_z;
-            lv_obj_set_style_text_color(g_ui.row1_val,
-                sign_z > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
-        }
-    }
+    bool pos_z_ch = (data.pos_z != s_last_pos_z);
+    bool pos_x_ch = (data.pos_x != s_last_pos_x);
+    if (!pos_z_ch && !pos_x_ch) return;
 
-    // POS_X
-    if (data.pos_x != s_last_pos_x) {
-        s_last_pos_x = data.pos_x;
-        int8_t sign_x = (data.pos_x >= 0) ? 1 : -1;
-        DisplayFormatter::formatPosition(buf, data.pos_x);
-        lv_label_set_text(g_ui.row2_val, buf);
-        if (sign_x != s_last_sign_x) {
-            s_last_sign_x = sign_x;
-            lv_obj_set_style_text_color(g_ui.row2_val,
-                sign_x > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+    // select_menu == 0 (начальное состояние до первого SELECTMENU от STM32):
+    // обрабатываем как SM=1 (основной экран).
+    uint8_t sm = (data.select_menu == 0) ? 1 : data.select_menu;
+
+    if (sm == 1) {
+        // SM=1: pos_z → row1, pos_x → row2
+        if (!g_ui.row1_val || !g_ui.row2_val) return;
+        if (pos_z_ch) {
+            s_last_pos_z = data.pos_z;
+            int8_t sgn = (data.pos_z >= 0) ? 1 : -1;
+            DisplayFormatter::formatPosition(buf, data.pos_z);
+            lv_label_set_text(g_ui.row1_val, buf);
+            if (sgn != s_last_sign_z) {
+                s_last_sign_z = sgn;
+                lv_obj_set_style_text_color(g_ui.row1_val,
+                    sgn > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+            }
+        }
+        if (pos_x_ch) {
+            s_last_pos_x = data.pos_x;
+            int8_t sgn = (data.pos_x >= 0) ? 1 : -1;
+            DisplayFormatter::formatPosition(buf, data.pos_x);
+            lv_label_set_text(g_ui.row2_val, buf);
+            if (sgn != s_last_sign_x) {
+                s_last_sign_x = sgn;
+                lv_obj_set_style_text_color(g_ui.row2_val,
+                    sgn > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+            }
+        }
+    } else if (sm == 3) {
+        // SM=3 "Ввод/Сброс Осей": pos_z → row3, pos_x → row2 (кроме MODE_FEED где row2=НАТЯГ)
+        if (pos_z_ch && g_ui.row3_val) {
+            s_last_pos_z = data.pos_z;
+            int8_t sgn = (data.pos_z >= 0) ? 1 : -1;
+            DisplayFormatter::formatPosition(buf, data.pos_z);
+            lv_label_set_text(g_ui.row3_val, buf);
+            if (sgn != s_last_sign_z) {
+                s_last_sign_z = sgn;
+                lv_obj_set_style_text_color(g_ui.row3_val,
+                    sgn > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+            }
+        }
+        if (pos_x_ch && g_ui.row2_val && data.mode != MODE_FEED) {
+            // MODE_FEED SM=3: row2 = НАТЯГ Z (не позиция X), не перезаписываем
+            s_last_pos_x = data.pos_x;
+            int8_t sgn = (data.pos_x >= 0) ? 1 : -1;
+            DisplayFormatter::formatPosition(buf, data.pos_x);
+            lv_label_set_text(g_ui.row2_val, buf);
+            if (sgn != s_last_sign_x) {
+                s_last_sign_x = sgn;
+                lv_obj_set_style_text_color(g_ui.row2_val,
+                    sgn > 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+            }
         }
     }
+    // SM=2: row1/row2 заняты параметрами — не перезаписываем позициями
 }
 
 static void update_ui_values(const LatheData& data)
@@ -4600,22 +4635,14 @@ void loop()
 
     // UI dirty: вызываем update_ui_values() ОДИН РАЗ за итерацию loop(),
     // даже если в этой итерации пришло несколько UART-команд (burst в thread mode).
-    // Также: периодический таймер 300мс — гарантирует рендер даже если нет non-pos команд
-    // (старт системы, сабменю, стабилизация AP и других параметров).
-    {
-        static uint32_t s_ui_refresh_t = 0;
-        uint32_t now = millis();
-        if (s_ui_dirty || (now - s_ui_refresh_t) >= 300) {
-            s_ui_dirty = false;
-            s_ui_refresh_t = now;
-            update_ui_values(uart_protocol.getData());
-        }
+    // НЕ вызываем по таймеру — 1000+ lv_label_set_text каждые 300мс = heap-фрагментация.
+    if (s_ui_dirty) {
+        s_ui_dirty = false;
+        update_ui_values(uart_protocol.getData());
     }
 
-    // Позиции/RPM: вызываем update_pos_rpm_labels сразу при pos_dirty.
-    // Функция сама пропускает вызовы LVGL если значения не изменились.
-    // update_pos_rpm_labels работает только при select_menu==1;
-    // в сабменю позиции обновляются через update_ui_values по таймеру выше.
+    // Позиции/RPM: update_pos_rpm_labels обновляет только изменившиеся виджеты
+    // (≤6 lv_label_set_text вместо 1000+). Работает во всех режимах SM=0/1/3.
     if (uart_protocol.isPosDirty()) {
         uart_protocol.clearPosDirty();
         update_pos_rpm_labels(uart_protocol.getData());
