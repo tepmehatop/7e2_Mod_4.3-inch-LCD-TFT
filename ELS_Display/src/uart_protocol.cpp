@@ -244,25 +244,19 @@ void UartProtocol::parseThread(const char* params)
 void UartProtocol::parsePosZ(const char* params)
 {
     data_.pos_z = atol(params);
-    if (data_update_callback_) {
-        data_update_callback_(data_);
-    }
+    pos_dirty_ = true;  // рендер по таймеру в loop(), не сразу
 }
 
 void UartProtocol::parsePosX(const char* params)
 {
     data_.pos_x = atol(params);
-    if (data_update_callback_) {
-        data_update_callback_(data_);
-    }
+    pos_dirty_ = true;
 }
 
 void UartProtocol::parseRPM(const char* params)
 {
     data_.rpm = atoi(params);
-    if (data_update_callback_) {
-        data_update_callback_(data_);
-    }
+    pos_dirty_ = true;
 }
 
 void UartProtocol::parseLimits(const char* params)

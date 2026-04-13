@@ -4530,6 +4530,17 @@ void loop()
     // Process UART commands
     uart_protocol.process();
 
+    // Позиции/RPM: рендерить не чаще 1 раза в 150мс — не перегружать LVGL
+    // Режим/субменю/параметры рендерятся немедленно через onDataUpdate()
+    {
+        static uint32_t s_pos_render_t = 0;
+        if (uart_protocol.isPosDirty() && (millis() - s_pos_render_t) >= 150) {
+            s_pos_render_t = millis();
+            uart_protocol.clearPosDirty();
+            update_ui_values(uart_protocol.getData());
+        }
+    }
+
     // Авто-выход из режима редактирования через 5 секунд бездействия
     if (g_edit_param.active && (millis() - g_edit_param.last_ms > 5000)) {
         exit_edit_mode();

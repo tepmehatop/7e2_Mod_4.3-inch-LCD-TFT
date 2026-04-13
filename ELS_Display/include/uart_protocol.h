@@ -152,6 +152,10 @@ public:
     // Получить текущие данные станка
     const LatheData& getData() const { return data_; }
 
+    // Флаг: пришли новые позиции/RPM (для рендера по таймеру в loop())
+    bool isPosDirty() const { return pos_dirty_; }
+    void clearPosDirty()    { pos_dirty_ = false; }
+
     // Отправить команду Arduino (нажатие кнопки)
     void sendButtonPress(const char* button_name);
 
@@ -189,6 +193,7 @@ public:
 private:
     HardwareSerial* serial_;
     LatheData data_;
+    bool pos_dirty_ = false;  // true когда пришли POS_Z/POS_X/RPM
 
     char rx_buffer_[256];
     uint16_t rx_index_;
