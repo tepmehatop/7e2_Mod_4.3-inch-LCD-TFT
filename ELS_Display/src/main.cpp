@@ -708,6 +708,9 @@ static int      g_test_idx       = 0;
 static uint8_t  s_dn_rapid_cnt   = 0;
 static uint32_t s_dn_rapid_ms    = 0;
 
+// Флаг: apply_mode_layout сбросил row1/row2 в "+0.00" — кэш позиций надо инвалидировать
+static bool s_pos_labels_dirty = false;
+
 // Forward declarations — нужны lambda-callbacks внутри create_dark_pro_ui
 static void create_k_content(lv_obj_t* screen);
 static void create_i_content(lv_obj_t* screen);
@@ -4446,8 +4449,6 @@ static void test_stop()
 // Цель: при burst-пакетах (thread mode: 8+ команд за 1 вызов process())
 // вызывать update_ui_values() один раз, а не 8 раз подряд.
 static bool s_ui_dirty = false;
-// Флаг: apply_mode_layout сбросил row1/row2 в "+0.00" — кэш позиций надо инвалидировать
-static bool s_pos_labels_dirty = false;
 
 void onDataUpdate(const LatheData& data)
 {
