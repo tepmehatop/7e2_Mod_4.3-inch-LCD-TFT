@@ -2665,6 +2665,9 @@ static void apply_mode_layout(LatheMode mode)
 
     // Сбросить sub-edit при смене режима (цвет заголовков восстановится выше)
     if (g_sub_edit.active) exit_sub_edit();
+
+    // row1/row2 сброшены в "+0.00" — инвалидировать кэш позиций
+    s_pos_labels_dirty = true;
 }
 
 // ============================================================================
@@ -3261,6 +3264,15 @@ static void update_pos_rpm_labels(const LatheData& data)
     static int32_t s_last_rpm    = INT32_MIN;
     static int8_t  s_last_sign_z = 0;
     static int8_t  s_last_sign_x = 0;
+
+    // apply_mode_layout сбросил row1/row2 в "+0.00" — принудительно обновить
+    if (s_pos_labels_dirty) {
+        s_pos_labels_dirty = false;
+        s_last_pos_z  = INT32_MIN;
+        s_last_pos_x  = INT32_MIN;
+        s_last_sign_z = 0;
+        s_last_sign_x = 0;
+    }
 
     char buf[20];
 
@@ -4434,6 +4446,8 @@ static void test_stop()
 // Цель: при burst-пакетах (thread mode: 8+ команд за 1 вызов process())
 // вызывать update_ui_values() один раз, а не 8 раз подряд.
 static bool s_ui_dirty = false;
+// Флаг: apply_mode_layout сбросил row1/row2 в "+0.00" — кэш позиций надо инвалидировать
+static bool s_pos_labels_dirty = false;
 
 void onDataUpdate(const LatheData& data)
 {
@@ -4739,5 +4753,4 @@ void loop()
     }
 #endif
 
-    delay(5);
 }
