@@ -3327,7 +3327,8 @@ static void update_pos_rpm_labels(const LatheData& data)
         }
     } else if (sm == 3) {
         // SM=3 "Ввод/Сброс Осей": pos_z → row3, pos_x → row2 (кроме MODE_FEED где row2=НАТЯГ)
-        if (pos_z_ch && g_ui.row3_val) {
+        // SM=3: pos_z → row3 для всех режимов кроме MODE_FEED (там row3 = "---")
+        if (pos_z_ch && g_ui.row3_val && data.mode != MODE_FEED) {
             s_last_pos_z = data.pos_z;
             int8_t sgn = (data.pos_z >= 0) ? 1 : -1;
             DisplayFormatter::formatPosition(buf, data.pos_z);
@@ -3360,10 +3361,17 @@ static void update_ui_values(const LatheData& data)
 
     char buf[32];
 
+    // Строковые кэши: предотвращают повторный lv_label_set_text при неизменном значении.
+    // Инвалидируются при смене режима/SM (ниже).
+    static char s_c_rpm[12]  = {};  // secondary_val (RPM)
+    static char s_c_row3[32] = {};  // row3_val
+
     // ── Смена режима: обновить подписи ───────────────────────────────────────
     if (data.mode != s_last_mode) {
         s_last_mode = data.mode;
         s_last_select_menu = data.select_menu;
+        s_c_rpm[0]  = '\0';  // инвалидировать кэши при смене режима
+        s_c_row3[0] = '\0';
         if (g_alert.active) dismiss_alert();  // Сбросить алерт при смене режима
         apply_mode_layout(data.mode);
         // При смене режима применить SM-подэкран если нужно
@@ -3379,6 +3387,7 @@ static void update_ui_values(const LatheData& data)
         }
     } else if (data.select_menu != s_last_select_menu) {
         s_last_select_menu = data.select_menu;
+        s_c_row3[0] = '\0';  // инвалидировать кэш row3 при смене SM
         // SM изменился внутри текущего режима
         if (data.select_menu == 1) {
             apply_mode_layout(data.mode);  // Восстановить нормальный layout
@@ -3523,8 +3532,11 @@ static void update_ui_values(const LatheData& data)
 
     // ── Левая панель: вторичное значение — всегда RPM ───────────────────────
     snprintf(buf, sizeof(buf), "%d", data.rpm);
-    lv_label_set_text(g_ui.secondary_val, buf);
-    if (g_ui.secondary_val_glow) lv_label_set_text(g_ui.secondary_val_glow, buf);
+    if (strcmp(buf, s_c_rpm) != 0) {
+        strncpy(s_c_rpm, buf, sizeof(s_c_rpm) - 1);
+        lv_label_set_text(g_ui.secondary_val, buf);
+        if (g_ui.secondary_val_glow) lv_label_set_text(g_ui.secondary_val_glow, buf);
+    }
 
     // ── Правая панель: row4 (ПРОХОДЫ/ЗАХОДОВ/ЦИКЛОВ) ─────────────────────────
     if (g_ui.row4_val) {
@@ -3589,14 +3601,10 @@ static void update_ui_values(const LatheData& data)
             lv_obj_set_style_text_color(g_ui.row2_val, lv_color_hex(0xe0e0e0), 0);
         }
     } else if (data.select_menu == 3 && data.mode != MODE_FEED && data.mode != MODE_DIVIDER) {
-        // SM=3 Ввод/Сброс Осей (M2/M3/M4/M5/M6): row1=ДИАМЕТР, row2=ОСЬ X
+        // SM=3 Ввод/Сброс Осей: row1=ДИАМЕТР (статика), row2/row3 (pos_x/pos_z) — update_pos_rpm_labels
         DisplayFormatter::formatPosition(buf, data.diam_x);
         lv_label_set_text(g_ui.row1_val, buf);
         lv_obj_set_style_text_color(g_ui.row1_val, lv_color_hex(0xe0e0e0), 0);
-        DisplayFormatter::formatPosition(buf, data.pos_x);
-        lv_label_set_text(g_ui.row2_val, buf);
-        lv_obj_set_style_text_color(g_ui.row2_val,
-            data.pos_x >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
     } else if (data.mode == MODE_SPHERE) {
         if (data.select_menu == 2) {
             // M6 SM=2: row1=ШИРИНА РЕЗЦА, row2=ШАГ ОСИ Z
@@ -3696,16 +3704,7 @@ static void update_ui_values(const LatheData& data)
             lv_obj_set_style_text_color(g_ui.row2_val, lv_color_hex(0xe0e0e0), 0);
         }
     } else {
-        // M1 SM=1, M2 SM=1, others: row1=Позиция Z, row2=Позиция X
-        DisplayFormatter::formatPosition(buf, data.pos_z);
-        lv_label_set_text(g_ui.row1_val, buf);
-        lv_obj_set_style_text_color(g_ui.row1_val,
-            data.pos_z >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
-
-        DisplayFormatter::formatPosition(buf, data.pos_x);
-        lv_label_set_text(g_ui.row2_val, buf);
-        lv_obj_set_style_text_color(g_ui.row2_val,
-            data.pos_x >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+        // SM=1: pos_z/pos_x → update_pos_rpm_labels обновляет row1/row2 при изменении позиции
     }
 
     // ── Правая панель row3: зависит от режима, не перезаписывать при sub-edit ─
@@ -3729,18 +3728,17 @@ static void update_ui_values(const LatheData& data)
                 // M1 SM=1: СЪЁМ (Ap): мм
                 snprintf(buf, sizeof(buf), "%d.%02d",
                          data.ap / 100, abs(data.ap % 100));
-                lv_label_set_text(g_ui.row3_val, buf);
-                lv_obj_set_style_text_color(g_ui.row3_val, lv_color_hex(0xe0e0e0), 0);
+                if (strcmp(buf, s_c_row3) != 0) {
+                    strncpy(s_c_row3, buf, sizeof(s_c_row3) - 1);
+                    lv_label_set_text(g_ui.row3_val, buf);
+                    lv_obj_set_style_text_color(g_ui.row3_val, lv_color_hex(0xe0e0e0), 0);
+                }
             }
             break;
 
         case MODE_AFEED:
             if (data.select_menu == 3) {
-                // M2 SM=3: ОСЬ Z
-                DisplayFormatter::formatPosition(buf, data.pos_z);
-                lv_label_set_text(g_ui.row3_val, buf);
-                lv_obj_set_style_text_color(g_ui.row3_val,
-                    data.pos_z >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+                // M2 SM=3: pos_z → row3_val, update_pos_rpm_labels обновляет
                 break;
             }
             if (data.select_menu == 2) {
@@ -3757,17 +3755,16 @@ static void update_ui_values(const LatheData& data)
                 snprintf(buf, sizeof(buf), "%d.%02d",
                          data.ap / 100, abs(data.ap % 100));
             }
-            lv_label_set_text(g_ui.row3_val, buf);
-            lv_obj_set_style_text_color(g_ui.row3_val, lv_color_hex(0xe0e0e0), 0);
+            if (strcmp(buf, s_c_row3) != 0) {
+                strncpy(s_c_row3, buf, sizeof(s_c_row3) - 1);
+                lv_label_set_text(g_ui.row3_val, buf);
+                lv_obj_set_style_text_color(g_ui.row3_val, lv_color_hex(0xe0e0e0), 0);
+            }
             break;
 
         case MODE_THREAD:
             if (data.select_menu == 3) {
-                // M3 SM=3: ОСЬ Z
-                DisplayFormatter::formatPosition(buf, data.pos_z);
-                lv_label_set_text(g_ui.row3_val, buf);
-                lv_obj_set_style_text_color(g_ui.row3_val,
-                    data.pos_z >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+                // M3 SM=3: pos_z → row3_val, update_pos_rpm_labels обновляет
                 break;
             }
             if (data.select_menu == 2) {
@@ -3795,11 +3792,7 @@ static void update_ui_values(const LatheData& data)
 
         case MODE_SPHERE: {
             if (data.select_menu == 3) {
-                // M6 SM=3: ОСЬ Z
-                DisplayFormatter::formatPosition(buf, data.pos_z);
-                lv_label_set_text(g_ui.row3_val, buf);
-                lv_obj_set_style_text_color(g_ui.row3_val,
-                    data.pos_z >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+                // M6 SM=3: pos_z → row3_val, update_pos_rpm_labels обновляет
                 break;
             }
             // НОЖКА ММ = bar_r * 2 / 100 (диаметр, как на старом LCD: Bar_R_mm*2/100)
@@ -3837,11 +3830,7 @@ static void update_ui_values(const LatheData& data)
         case MODE_CONE_L:
         case MODE_CONE_R:
             if (data.select_menu == 3) {
-                // M4/M5 SM=3: ОСЬ Z
-                DisplayFormatter::formatPosition(buf, data.pos_z);
-                lv_label_set_text(g_ui.row3_val, buf);
-                lv_obj_set_style_text_color(g_ui.row3_val,
-                    data.pos_z >= 0 ? lv_color_hex(0x00ff88) : lv_color_hex(0xff5555), 0);
+                // M4/M5 SM=3: pos_z → row3_val, update_pos_rpm_labels обновляет
             } else if (data.select_menu == 2) {
                 // M4/M5 SM=2: "---"
                 lv_label_set_text(g_ui.row3_val, "---");
