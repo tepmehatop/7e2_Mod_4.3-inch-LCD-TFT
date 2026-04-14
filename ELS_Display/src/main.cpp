@@ -4658,9 +4658,11 @@ void loop()
         update_ui_values(uart_protocol.getData());
     }
 
-    // Позиции/RPM: update_pos_rpm_labels обновляет только изменившиеся виджеты
-    // (≤6 lv_label_set_text вместо 1000+). Работает во всех режимах SM=0/1/3.
-    if (uart_protocol.isPosDirty()) {
+    // Позиции/RPM: обновляем когда:
+    // - пришли новые POS_Z/POS_X/RPM (pos_dirty_)
+    // - ИЛИ apply_mode_layout/apply_smX_layout сбросил row1/row2/row3
+    //   в "+0.00" (s_pos_labels_dirty) — не ждать следующего POS_Z пакета
+    if (uart_protocol.isPosDirty() || s_pos_labels_dirty) {
         uart_protocol.clearPosDirty();
         update_pos_rpm_labels(uart_protocol.getData());
     }
