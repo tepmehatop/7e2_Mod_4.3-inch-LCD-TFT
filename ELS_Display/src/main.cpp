@@ -2270,6 +2270,7 @@ static void apply_feed_sm2_layout()
 static void apply_feed_sm3_layout()
 {
     if (g_edit_param.active) exit_edit_mode();
+    s_pos_labels_dirty = true;  // инвалидировать кэш позиций — SM=1→SM=3
     lv_label_set_text(g_ui.row1_title,
         "\xD0\x9E\xD0\xA2\xD0\xA1\xD0\x9A\xD0\x9E\xD0\x9A Y");         // ОТСКОК Z
     lv_obj_set_style_text_color(g_ui.row1_title, lv_color_hex(0x6a9fb5), 0);
@@ -2336,6 +2337,7 @@ static void apply_sphere_sm2_layout()
 static void apply_common_sm3_layout()
 {
     if (g_edit_param.active) exit_edit_mode();
+    s_pos_labels_dirty = true;  // инвалидировать кэш позиций — SM=1→SM=3
     lv_label_set_text(g_ui.row1_title,
         "\xD0\x94\xD0\x98\xD0\x90\xD0\x9C\xD0\x95\xD0\xA2\xD0\xA0");       // ДИАМЕТР
     lv_obj_set_style_text_color(g_ui.row1_title, lv_color_hex(0x6a9fb5), 0);
