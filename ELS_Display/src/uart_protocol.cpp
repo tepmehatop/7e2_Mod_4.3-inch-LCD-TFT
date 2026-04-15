@@ -202,9 +202,6 @@ void UartProtocol::parseMode(const char* params)
 {
     int mode = atoi(params);
     if (mode >= MODE_FEED && mode <= MODE_RESERVE) {
-        if (data_.mode != (LatheMode)mode) {
-            data_.ap = 0;  // сбросить Ap при смене режима — до вызова callback
-        }
         data_.mode = (LatheMode)mode;
         if (data_update_callback_) {
             data_update_callback_(data_);

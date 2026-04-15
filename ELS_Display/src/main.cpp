@@ -4685,13 +4685,17 @@ void loop()
     // Решение: всегда передавать реальное прошедшее время.
     {
         static uint32_t s_last_tick = 0;
+        static uint32_t s_lvgl_last_ms = 0;
         uint32_t now = millis();
         lv_tick_inc(now - s_last_tick);
         s_last_tick = now;
+        // Throttle рендер до 20 fps: lv_timer_handler на 480×272 SPI занимает 30-100мс,
+        // при каждом вызове блокирует чтение UART → задержка позиций и TOUCH.
+        if (now - s_lvgl_last_ms >= 50) {
+            s_lvgl_last_ms = now;
+            lv_timer_handler();
+        }
     }
-
-    // Process LVGL
-    lv_timer_handler();
 
 #ifdef DISPLAY_JC4827W543
     // Проверяем HTTP screenshot сервер
